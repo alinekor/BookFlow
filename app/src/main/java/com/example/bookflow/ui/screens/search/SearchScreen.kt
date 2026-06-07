@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -27,13 +30,14 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
     onBookClick: (key: String) -> Unit,
 ) {
-    val initBooks = getInitBooks()
+    val focusManager = LocalFocusManager.current
 
     var query by rememberSaveable { mutableStateOf("") }
     var expanded by rememberSaveable { mutableStateOf(false) }
 
+    val initBooks = getInitBooks()
     val filteredBooks = initBooks.filter {
-        it.title.contains(query, ignoreCase = true)
+        query.isNotEmpty() && it.title.contains(query, ignoreCase = true)
     }
 
     Box(
@@ -44,10 +48,21 @@ fun SearchScreen(
         AppSearchBar(
             query = query,
             onQueryChange = { query = it },
-            onSearch = { expanded = false },
+            onSearch = {
+                focusManager.clearFocus()
+                if (query.isEmpty()) expanded = false
+            },
             expanded = expanded,
             onExpandedChange = { expanded = it },
-            onTrailingIconClick = { query = "" },
+            trailingIcon = if (expanded) Icons.Default.Close else null,
+            onTrailingIconClick = {
+                if (query.isNotEmpty()) {
+                    query = ""
+                } else {
+                    focusManager.clearFocus()
+                    expanded = false
+                }
+            },
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .semantics { traversalIndex = 0f },
@@ -79,7 +94,7 @@ private fun getInitBooks(): List<Book> {
     return List(10) { i ->
         Book(
             key = "/works/OL27448W_$i",
-            title = "The Lord of the Rings",
+            title = "The Lord of the Rings $i",
             authors = listOf("J. R. R. Tolkien"),
             publishYear = 1954,
             cover = BookCover(id = 8231856),
