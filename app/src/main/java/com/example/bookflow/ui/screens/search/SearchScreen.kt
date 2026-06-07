@@ -71,7 +71,10 @@ fun SearchScreen(
                 items(filteredBooks, key = { it.key }) { item ->
                     BookListItem(
                         item = item,
-                        onBookClick = onBookClick,
+                        onBookClick = {
+                            focusManager.clearFocus()
+                            onBookClick(it)
+                        },
                     )
                 }
             }

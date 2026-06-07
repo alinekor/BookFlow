@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,15 +32,20 @@ fun BookFlowApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    var selectedBottomRoute by rememberSaveable {
+        mutableStateOf(AppBottomDestination.Search.name)
+    }
+
     Scaffold(
         bottomBar = {
             AppBottomBar(
                 items = AppBottomDestination.entries.toList().toBottomBarItems(),
                 isItemSelected = { navItem ->
-                    currentDestination?.hierarchy?.any { it.route == navItem.route } == true
+                    selectedBottomRoute == navItem.route
                 },
                 onItemClick = { navItem ->
-                    if (currentDestination?.route == navItem.route) return@AppBottomBar
+                    if (selectedBottomRoute == navItem.route) return@AppBottomBar
+                    selectedBottomRoute = navItem.route
 
                     navController.navigate(navItem.route) {
                         popUpTo(navController.graph.findStartDestination().id)
