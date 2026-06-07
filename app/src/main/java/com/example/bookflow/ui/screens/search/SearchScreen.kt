@@ -1,24 +1,66 @@
 package com.example.bookflow.ui.screens.search
 
 import android.content.res.Configuration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.bookflow.data.model.Book
+import com.example.bookflow.data.model.BookCover
+import com.example.bookflow.ui.components.AppSearchBar
+import com.example.bookflow.ui.components.BookListItem
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
-fun SearchScreen(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
+fun SearchScreen(
+    modifier: Modifier = Modifier,
+    onBookClick: (key: String) -> Unit,
+) {
+    val initBooks = getInitBooks()
+
+    var query by rememberSaveable { mutableStateOf("") }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    val filteredBooks = initBooks.filter {
+        it.title.contains(query, ignoreCase = true)
+    }
+
+    Box(
+        modifier
             .fillMaxSize()
-            .background(color = Color.White)
+            .semantics { isTraversalGroup = true }
     ) {
-        Text("Search")
+        AppSearchBar(
+            query = query,
+            onQueryChange = { query = it },
+            onSearch = { expanded = false },
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            onTrailingIconClick = { query = "" },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .semantics { traversalIndex = 0f },
+        ) {
+            LazyColumn {
+                items(filteredBooks, key = { it.key }) { item ->
+                    BookListItem(
+                        item = item,
+                        onBookClick = onBookClick,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -27,6 +69,20 @@ fun SearchScreen(modifier: Modifier = Modifier) {
 @Composable
 fun SearchScreenPreview() {
     BookFlowTheme {
-        SearchScreen()
+        SearchScreen(
+            onBookClick = {},
+        )
+    }
+}
+
+private fun getInitBooks(): List<Book> {
+    return List(10) { i ->
+        Book(
+            key = "/works/OL27448W_$i",
+            title = "The Lord of the Rings",
+            authors = listOf("J. R. R. Tolkien"),
+            publishYear = 1954,
+            cover = BookCover(id = 8231856),
+        )
     }
 }
