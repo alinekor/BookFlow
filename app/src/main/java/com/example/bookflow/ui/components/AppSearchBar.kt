@@ -61,6 +61,7 @@ fun AppSearchBar(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         modifier = modifier,
+        windowInsets = SearchBarDefaults.windowInsets,
     ) {
         //TODO: INIT, EMPTY, PROGRESS STATES
         searchContent()
