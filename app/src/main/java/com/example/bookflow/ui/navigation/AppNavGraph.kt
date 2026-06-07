@@ -19,11 +19,12 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
         composable(route = AppBottomDestination.Search.name) {
             SearchScreen()
         }
-        composable(route = AppBottomDestination.BookDetails.name) {
-            BookDetailsScreen()
-        }
         composable(route = AppBottomDestination.MyShelf.name) {
             MyShelfScreen()
+        }
+
+        composable<AppDestination.BookDetails> {
+            BookDetailsScreen()
         }
     }
 }

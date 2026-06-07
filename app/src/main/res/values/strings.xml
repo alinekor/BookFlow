@@ -2,6 +2,5 @@
     <string name="app_name">BookFlow</string>
 
     <string name="bottom_nav_destination_search">Search</string>
-    <string name="bottom_nav_destination_book_details">Book</string>
     <string name="bottom_nav_destination_my_shelf">My shelf</string>
 </resources>

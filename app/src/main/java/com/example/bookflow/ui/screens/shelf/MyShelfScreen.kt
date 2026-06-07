@@ -16,7 +16,7 @@ fun MyShelfScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Color.DarkGray)
+            .background(color = Color.LightGray)
     ) {
         Text("MyShelf")
     }
