@@ -1,6 +1,10 @@
 package com.example.bookflow.ui.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -61,7 +65,7 @@ fun AppSearchBar(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         modifier = modifier,
-        windowInsets = SearchBarDefaults.windowInsets,
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
     ) {
         //TODO: INIT, EMPTY, PROGRESS STATES
         searchContent()

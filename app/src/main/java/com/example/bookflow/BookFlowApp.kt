@@ -55,9 +55,7 @@ fun BookFlowApp(
             )
         },
         modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-        ),
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom),
     ) { innerPadding ->
         AppNavGraph(
             navController = navController,
