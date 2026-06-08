@@ -28,7 +28,11 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
         }
 
         composable<AppDestination.BookDetails> {
-            BookDetailsScreen()
+            BookDetailsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

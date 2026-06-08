@@ -42,7 +42,7 @@ fun BookListItem(
             modifier = modifier.padding(12.dp),
         ) {
             Image(
-                painter = painterResource(R.drawable.book_cover_test),
+                painter = painterResource(R.drawable.book_cover_test_medium),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
