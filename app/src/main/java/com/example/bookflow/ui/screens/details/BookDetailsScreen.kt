@@ -2,6 +2,7 @@ package com.example.bookflow.ui.screens.details
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -22,8 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,10 +55,18 @@ fun BookDetailsScreen(
     val bookDetails = getInitBookDetails()
     var savedToLibrary by rememberSaveable { mutableStateOf(false) }
 
+    val scrollState = rememberScrollState()
+    val isScrolled by remember {
+        derivedStateOf { scrollState.value > 0 }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            BackTopAppBar(onBackClick = onBackClick)
+            BackTopAppBar(
+                onBackClick = onBackClick,
+                highlighted = isScrolled,
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -68,12 +79,16 @@ fun BookDetailsScreen(
             }
         }
     ) { innerPadding ->
-        BookContent(innerPadding, bookDetails)
+        BookContent(innerPadding, bookDetails, scrollState)
     }
 }
 
 @Composable
-private fun BookContent(innerPadding: PaddingValues, bookDetails: BookDetails) {
+private fun BookContent(
+    innerPadding: PaddingValues,
+    bookDetails: BookDetails,
+    scrollState: ScrollState,
+) {
     val authors = bookDetails.authors.takeIf { it.isNotEmpty() }?.joinToString(",")
     val tags = bookDetails.subjects.takeIf { it.isNotEmpty() }
 
@@ -81,7 +96,7 @@ private fun BookContent(innerPadding: PaddingValues, bookDetails: BookDetails) {
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(bottom = 80.dp, start = 12.dp, end = 12.dp)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
