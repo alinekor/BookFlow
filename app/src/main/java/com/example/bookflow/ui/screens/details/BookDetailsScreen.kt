@@ -6,6 +6,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -62,6 +63,7 @@ fun BookDetailsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             BackTopAppBar(
                 onBackClick = onBackClick,
@@ -97,7 +99,7 @@ private fun BookContent(
             .fillMaxSize()
             .padding(innerPadding)
             .verticalScroll(scrollState)
-            .padding(bottom = 80.dp, start = 12.dp, end = 12.dp)
+            .padding(bottom = 108.dp, start = 12.dp, end = 12.dp)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         Image(
