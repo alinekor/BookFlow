@@ -19,16 +19,36 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
+import com.example.bookflow.presentation.details.SearchUiState
+import com.example.bookflow.presentation.details.SearchViewModel
 import com.example.bookflow.ui.components.AppSearchBar
 import com.example.bookflow.ui.components.BookListItem
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun SearchScreen(
+    onNavAction: (action: SearchNavAction) -> Unit,
     modifier: Modifier = Modifier,
-    onBookClick: (key: String) -> Unit,
+    viewModel: SearchViewModel = viewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    SearchScreen(
+        uiState = uiState,
+        onNavAction = onNavAction,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun SearchScreen(
+    uiState: SearchUiState,
+    onNavAction: (action: SearchNavAction) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -73,7 +93,7 @@ fun SearchScreen(
                         item = item,
                         onBookClick = {
                             focusManager.clearFocus()
-                            onBookClick(it)
+                            onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
                         },
                     )
                 }
@@ -88,7 +108,10 @@ fun SearchScreen(
 fun SearchScreenPreview() {
     BookFlowTheme {
         SearchScreen(
-            onBookClick = {},
+            uiState = SearchUiState.Content(
+                books = getInitBooks()
+            ),
+            onNavAction = {},
         )
     }
 }
