@@ -50,10 +50,16 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun BookDetailsScreen(
+    bookKey: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bookDetails = getInitBookDetails()
+    val stubBookDetails = getInitBookDetails()
+    val bookDetails = stubBookDetails.copy(
+        key = bookKey,
+        title = "${stubBookDetails.title} - $bookKey"
+    )
+
     var savedToLibrary by rememberSaveable { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
@@ -172,7 +178,8 @@ private fun BookContent(
 fun BookDetailsScreenPreview() {
     BookFlowTheme {
         BookDetailsScreen(
-            onBackClick = {}
+            bookKey = "123",
+            onBackClick = {},
         )
     }
 }

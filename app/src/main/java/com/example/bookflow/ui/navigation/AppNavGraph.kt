@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.example.bookflow.ui.screens.details.BookDetailsScreen
 import com.example.bookflow.ui.screens.search.SearchScreen
 import com.example.bookflow.ui.screens.shelf.MyShelfScreen
@@ -18,8 +19,8 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
     ) {
         composable(route = AppBottomDestination.Search.name) {
             SearchScreen(
-                onBookClick = {
-                    navController.navigate(AppDestination.BookDetails)
+                onBookClick = { key ->
+                    navController.navigate(AppDestination.BookDetails(bookKey = key))
                 }
             )
         }
@@ -27,8 +28,11 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
             MyShelfScreen()
         }
 
-        composable<AppDestination.BookDetails> {
+        composable<AppDestination.BookDetails> { entry ->
+            val route = entry.toRoute<AppDestination.BookDetails>()
+
             BookDetailsScreen(
+                bookKey = route.bookKey,
                 onBackClick = {
                     navController.popBackStack()
                 }

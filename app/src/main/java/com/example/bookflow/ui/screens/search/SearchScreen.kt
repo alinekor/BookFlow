@@ -96,7 +96,7 @@ fun SearchScreenPreview() {
 private fun getInitBooks(): List<Book> {
     return List(10) { i ->
         Book(
-            key = "/works/OL27448W_$i",
+            key = "OL27448W_$i",
             title = "The Lord of the Rings $i",
             authors = listOf("J. R. R. Tolkien"),
             publishYear = 1954,

@@ -20,5 +20,5 @@ enum class AppBottomDestination(val icon: ImageVector, val labelRes: Int) {
 
 sealed class AppDestination {
     @Serializable
-    data object BookDetails : AppDestination()
+    data class BookDetails(val bookKey: String) : AppDestination()
 }
