@@ -9,9 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -22,9 +19,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookflow.data.model.Book
-import com.example.bookflow.data.model.BookCover
-import com.example.bookflow.presentation.details.SearchUiState
+import com.example.bookflow.presentation.details.SearchEvent
+import com.example.bookflow.presentation.details.SearchResultState
 import com.example.bookflow.presentation.details.SearchViewModel
+import com.example.bookflow.presentation.details.getInitBooks
 import com.example.bookflow.ui.components.AppSearchBar
 import com.example.bookflow.ui.components.BookListItem
 import com.example.bookflow.ui.theme.BookFlowTheme
@@ -35,10 +33,15 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = viewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val query by viewModel.query.collectAsStateWithLifecycle()
+    val isSearchExpanded by viewModel.isSearchExpanded.collectAsStateWithLifecycle()
+    val searchState by viewModel.searchState.collectAsStateWithLifecycle()
 
     SearchScreen(
-        uiState = uiState,
+        query = query,
+        isSearchExpanded = isSearchExpanded,
+        searchState = searchState,
+        onSearchEvent = viewModel::onSearchEvent,
         onNavAction = onNavAction,
         modifier = modifier,
     )
@@ -46,19 +49,14 @@ fun SearchScreen(
 
 @Composable
 private fun SearchScreen(
-    uiState: SearchUiState,
+    query: String,
+    isSearchExpanded: Boolean,
+    searchState: SearchResultState,
+    onSearchEvent: (event: SearchEvent) -> Unit,
     onNavAction: (action: SearchNavAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
-
-    var query by rememberSaveable { mutableStateOf("") }
-    var expanded by rememberSaveable { mutableStateOf(false) }
-
-    val initBooks = getInitBooks()
-    val filteredBooks = initBooks.filter {
-        query.isNotEmpty() && it.title.contains(query, ignoreCase = true)
-    }
 
     Box(
         modifier
@@ -67,37 +65,64 @@ private fun SearchScreen(
     ) {
         AppSearchBar(
             query = query,
-            onQueryChange = { query = it },
+            onQueryChange = {
+                onSearchEvent(SearchEvent.OnQueryChange(it))
+            },
             onSearch = {
                 focusManager.clearFocus()
-                if (query.isEmpty()) expanded = false
+                onSearchEvent(SearchEvent.OnSearchClick)
             },
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-            trailingIcon = if (expanded) Icons.Default.Close else null,
+            expanded = isSearchExpanded,
+            onExpandedChange = {
+                onSearchEvent(SearchEvent.OnExpandedChange(it))
+            },
+            trailingIcon = if (isSearchExpanded) Icons.Default.Close else null,
             onTrailingIconClick = {
-                if (query.isNotEmpty()) {
-                    query = ""
-                } else {
-                    focusManager.clearFocus()
-                    expanded = false
-                }
+                onSearchEvent(SearchEvent.OnClearQueryClick)
             },
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .semantics { traversalIndex = 0f },
         ) {
-            LazyColumn {
-                items(filteredBooks, key = { it.key }) { item ->
-                    BookListItem(
-                        item = item,
-                        onBookClick = {
-                            focusManager.clearFocus()
-                            onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
-                        },
-                    )
-                }
+            when (searchState) {
+                SearchResultState.Initial -> {} //TODO("epxanded = true")
+
+                SearchResultState.Loading -> {} //TODO()
+
+                SearchResultState.EmptySearch -> {} //TODO()
+
+                is SearchResultState.Content -> SearchContent(
+                    books = searchState.books,
+                    onBookClick = {
+                        onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
+                    }
+                )
+
+                is SearchResultState.Error -> {} //TODO()
             }
+        }
+
+        //TODO: Initial state and expanded = false
+    }
+}
+
+@Composable
+private fun SearchContent(
+    books: List<Book>,
+    onBookClick: (key: String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val focusManager = LocalFocusManager.current
+
+    LazyColumn(modifier = modifier) {
+        items(books, key = { it.key }) { item ->
+            BookListItem(
+                item = item,
+                onBookClick = {
+                    focusManager.clearFocus()
+                    onBookClick(it)
+                },
+            )
         }
     }
 }
@@ -108,22 +133,13 @@ private fun SearchScreen(
 fun SearchScreenPreview() {
     BookFlowTheme {
         SearchScreen(
-            uiState = SearchUiState.Content(
+            query = "the",
+            isSearchExpanded = true,
+            searchState = SearchResultState.Content(
                 books = getInitBooks()
             ),
+            onSearchEvent = {},
             onNavAction = {},
-        )
-    }
-}
-
-private fun getInitBooks(): List<Book> {
-    return List(10) { i ->
-        Book(
-            key = "OL27448W_$i",
-            title = "The Lord of the Rings $i",
-            authors = listOf("J. R. R. Tolkien"),
-            publishYear = 1954,
-            cover = BookCover(id = 8231856),
         )
     }
 }
