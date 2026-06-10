@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -21,7 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bookflow.ui.components.AppBottomBar
 import com.example.bookflow.ui.extensions.getAvailableBottomBarItems
-import com.example.bookflow.ui.navigation.AppBottomDestination
+import com.example.bookflow.ui.extensions.isInHierarchy
 import com.example.bookflow.ui.navigation.AppNavGraph
 import com.example.bookflow.ui.theme.BookFlowTheme
 
@@ -33,22 +30,19 @@ fun BookFlowApp(
     val currentDestination = navBackStackEntry?.destination
 
     val bottomBarItems = remember { getAvailableBottomBarItems() }
-    var selectedBottomRoute by rememberSaveable {
-        mutableStateOf(AppBottomDestination.Search.name)
-    }
 
     Scaffold(
         bottomBar = {
             AppBottomBar(
                 items = bottomBarItems,
                 isItemSelected = { navItem ->
-                    selectedBottomRoute == navItem.route
+                    currentDestination.isInHierarchy(navItem.graphRoute::class)
                 },
                 onItemClick = { navItem ->
-                    if (selectedBottomRoute != navItem.route) {
-                        selectedBottomRoute = navItem.route
+                    val isSameTab = currentDestination.isInHierarchy(navItem.graphRoute::class)
 
-                        navController.navigate(navItem.route) {
+                    if (!isSameTab) {
+                        navController.navigate(navItem.graphRoute) {
                             popUpTo(navController.graph.findStartDestination().id)
                             launchSingleTop = true
                         }

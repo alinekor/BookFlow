@@ -5,8 +5,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.bookflow.ui.extensions.toBottomBarItems
-import com.example.bookflow.ui.navigation.AppBottomDestination
+import com.example.bookflow.ui.extensions.getAvailableBottomBarItems
+import com.example.bookflow.ui.navigation.GraphRoute
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
@@ -33,8 +33,8 @@ fun AppBottomBar(
 fun AppBottomBarPreview() {
     BookFlowTheme {
         AppBottomBar(
-            items = AppBottomDestination.entries.toList().toBottomBarItems(),
-            isItemSelected = { it.route == "Search" },
+            items = getAvailableBottomBarItems(),
+            isItemSelected = { it.graphRoute == GraphRoute.SearchGraph },
             onItemClick = {},
         )
     }

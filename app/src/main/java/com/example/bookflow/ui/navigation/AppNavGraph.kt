@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import com.example.bookflow.ui.screens.details.BookDetailsScreen
 import com.example.bookflow.ui.screens.search.SearchScreen
 import com.example.bookflow.ui.screens.shelf.MyShelfScreen
@@ -16,28 +17,36 @@ import com.example.bookflow.ui.screens.shelf.MyShelfScreen
 fun AppNavGraph(navController: NavHostController, paddingValues: PaddingValues) {
     NavHost(
         navController = navController,
-        startDestination = AppBottomDestination.Search.name,
+        startDestination = GraphRoute.SearchGraph,
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues),
     ) {
-        composable(route = AppBottomDestination.Search.name) {
-            SearchScreen(
-                onBookClick = {
-                    navController.navigate(AppDestination.BookDetails)
-                }
-            )
-        }
-        composable(route = AppBottomDestination.MyShelf.name) {
-            MyShelfScreen()
+        navigation<GraphRoute.SearchGraph>(
+            startDestination = AppDestination.Search
+        ) {
+            composable<AppDestination.Search> {
+                SearchScreen(
+                    onBookClick = {
+                        navController.navigate(AppDestination.BookDetails)
+                    }
+                )
+            }
+            composable<AppDestination.BookDetails> {
+                BookDetailsScreen(
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
-        composable<AppDestination.BookDetails> {
-            BookDetailsScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
+        navigation<GraphRoute.MyShelfGraph>(
+            startDestination = AppDestination.MyShelf
+        ) {
+            composable<AppDestination.MyShelf> {
+                MyShelfScreen()
+            }
         }
     }
 }
