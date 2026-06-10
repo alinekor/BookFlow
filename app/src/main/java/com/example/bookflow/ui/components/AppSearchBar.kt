@@ -1,11 +1,11 @@
 package com.example.bookflow.ui.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -49,15 +49,15 @@ fun AppSearchBar(
                 onExpandedChange = onExpandedChange,
                 placeholder = { Text(stringResource(searchPlaceholderRes)) },
                 leadingIcon = {
-                    leadingIcon ?: return@InputField
-
-                    Icon(leadingIcon, contentDescription = null)
+                    leadingIcon?.let {
+                        Icon(it, contentDescription = null)
+                    }
                 },
                 trailingIcon = {
-                    trailingIcon ?: return@InputField
-
-                    IconButton(onClick = onTrailingIconClick) {
-                        Icon(trailingIcon, contentDescription = null)
+                    trailingIcon?.let {
+                        IconButton(onClick = onTrailingIconClick) {
+                            Icon(it, contentDescription = null)
+                        }
                     }
                 },
             )

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -44,12 +43,13 @@ fun BookFlowApp(
                     selectedBottomRoute == navItem.route
                 },
                 onItemClick = { navItem ->
-                    if (selectedBottomRoute == navItem.route) return@AppBottomBar
-                    selectedBottomRoute = navItem.route
+                    if (selectedBottomRoute != navItem.route) {
+                        selectedBottomRoute = navItem.route
 
-                    navController.navigate(navItem.route) {
-                        popUpTo(navController.graph.findStartDestination().id)
-                        launchSingleTop = true
+                        navController.navigate(navItem.route) {
+                            popUpTo(navController.graph.findStartDestination().id)
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
@@ -59,9 +59,7 @@ fun BookFlowApp(
     ) { innerPadding ->
         AppNavGraph(
             navController = navController,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            paddingValues = innerPadding,
         )
     }
 }

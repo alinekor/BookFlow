@@ -27,7 +27,6 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun SearchScreen(
-    modifier: Modifier = Modifier,
     onBookClick: (key: String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -41,7 +40,7 @@ fun SearchScreen(
     }
 
     Box(
-        modifier
+        Modifier
             .fillMaxSize()
             .semantics { isTraversalGroup = true }
     ) {

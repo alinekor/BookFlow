@@ -51,7 +51,6 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 @Composable
 fun BookDetailsScreen(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val bookDetails = getInitBookDetails()
     var savedToLibrary by rememberSaveable { mutableStateOf(false) }
@@ -62,7 +61,7 @@ fun BookDetailsScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             BackTopAppBar(
