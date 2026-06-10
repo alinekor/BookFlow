@@ -15,9 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
@@ -39,11 +36,7 @@ fun SearchScreen(
         query.isNotEmpty() && it.title.contains(query, ignoreCase = true)
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .semantics { isTraversalGroup = true }
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         AppSearchBar(
             query = query,
             onQueryChange = { query = it },
@@ -62,9 +55,7 @@ fun SearchScreen(
                     expanded = false
                 }
             },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .semantics { traversalIndex = 0f },
+            modifier = Modifier.align(Alignment.TopCenter)
         ) {
             LazyColumn {
                 items(filteredBooks, key = { it.key }) { item ->
