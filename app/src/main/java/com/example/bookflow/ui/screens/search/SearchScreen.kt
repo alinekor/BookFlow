@@ -1,23 +1,31 @@
 package com.example.bookflow.ui.screens.search
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.presentation.details.SearchEvent
 import com.example.bookflow.presentation.details.SearchResultState
@@ -25,6 +33,7 @@ import com.example.bookflow.presentation.details.SearchViewModel
 import com.example.bookflow.presentation.details.getInitBooks
 import com.example.bookflow.ui.components.AppSearchBar
 import com.example.bookflow.ui.components.BookListItem
+import com.example.bookflow.ui.components.EmptyPlaceholder
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
@@ -58,7 +67,7 @@ private fun SearchScreen(
 ) {
     val focusManager = LocalFocusManager.current
 
-    Box(
+    Column(
         modifier
             .fillMaxSize()
             .semantics { isTraversalGroup = true }
@@ -81,17 +90,23 @@ private fun SearchScreen(
                 onSearchEvent(SearchEvent.OnClearQueryClick)
             },
             modifier = Modifier
-                .align(Alignment.TopCenter)
+                .align(Alignment.CenterHorizontally)
                 .semantics { traversalIndex = 0f },
         ) {
             when (searchState) {
-                SearchResultState.Initial -> {} //TODO("epxanded = true")
+                SearchResultState.Initial -> SearchEmptyState(
+                    titleRes = R.string.search_initial_state_title,
+                    descriptionRes = R.string.search_initial_state_description,
+                )
 
-                SearchResultState.Loading -> {} //TODO()
+                SearchResultState.Loading -> SearchProgressState()
 
-                SearchResultState.EmptySearch -> {} //TODO()
+                SearchResultState.EmptySearch -> SearchEmptyState(
+                    titleRes = R.string.search_empty_state_title,
+                    descriptionRes = R.string.search_empty_state_description,
+                )
 
-                is SearchResultState.Content -> SearchContent(
+                is SearchResultState.Content -> SearchContentState(
                     books = searchState.books,
                     onBookClick = {
                         onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
@@ -102,12 +117,52 @@ private fun SearchScreen(
             }
         }
 
-        //TODO: Initial state and expanded = false
+        if (!isSearchExpanded) {
+            SearchEmptyState(
+                titleRes = R.string.search_initial_state_title,
+                descriptionRes = R.string.search_initial_state_description,
+            )
+        }
     }
 }
 
 @Composable
-private fun SearchContent(
+private fun SearchEmptyState(titleRes: Int, descriptionRes: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 72.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        EmptyPlaceholder(
+            image = {
+                Image(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(72.dp),
+                    colorFilter = ColorFilter.tint(
+                        MaterialTheme.colorScheme.primary,
+                    )
+                )
+            },
+            title = stringResource(titleRes),
+            description = stringResource(descriptionRes),
+        )
+    }
+}
+
+@Composable
+private fun SearchProgressState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun SearchContentState(
     books: List<Book>,
     onBookClick: (key: String) -> Unit,
     modifier: Modifier = Modifier,
@@ -130,16 +185,52 @@ private fun SearchContent(
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun SearchScreenPreview() {
+fun SearchProgressStatePreview() {
     BookFlowTheme {
-        SearchScreen(
-            query = "the",
-            isSearchExpanded = true,
-            searchState = SearchResultState.Content(
-                books = getInitBooks()
-            ),
-            onSearchEvent = {},
-            onNavAction = {},
-        )
+        Surface {
+            SearchScreen(
+                query = "the",
+                isSearchExpanded = true,
+                searchState = SearchResultState.Loading,
+                onSearchEvent = {},
+                onNavAction = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun SearchEmptyStatePreview() {
+    BookFlowTheme {
+        Surface {
+            SearchScreen(
+                query = "th",
+                isSearchExpanded = true,
+                searchState = SearchResultState.EmptySearch,
+                onSearchEvent = {},
+                onNavAction = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun SearchContentStatePreview() {
+    BookFlowTheme {
+        Surface {
+            SearchScreen(
+                query = "the",
+                isSearchExpanded = true,
+                searchState = SearchResultState.Content(
+                    books = getInitBooks()
+                ),
+                onSearchEvent = {},
+                onNavAction = {},
+            )
+        }
     }
 }
