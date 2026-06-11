@@ -22,7 +22,7 @@ import com.example.bookflow.R
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
-fun EmptyPlaceholder(
+fun StatusMessage(
     modifier: Modifier = Modifier,
     title: String,
     description: String?,
@@ -53,10 +53,10 @@ fun EmptyPlaceholder(
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun EmptyPlaceholderPreview() {
+fun StatusMessagePreview() {
     BookFlowTheme {
         Surface {
-            EmptyPlaceholder(
+            StatusMessage(
                 image = {
                     Image(
                         imageVector = Icons.Default.Search,

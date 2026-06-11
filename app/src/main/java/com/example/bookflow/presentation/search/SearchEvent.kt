@@ -1,4 +1,4 @@
-package com.example.bookflow.presentation.details
+package com.example.bookflow.presentation.search
 
 sealed class SearchEvent {
 
@@ -9,4 +9,6 @@ sealed class SearchEvent {
     data object OnSearchClick : SearchEvent()
 
     data object OnClearQueryClick : SearchEvent()
+
+    data object OnRetrySearch : SearchEvent()
 }

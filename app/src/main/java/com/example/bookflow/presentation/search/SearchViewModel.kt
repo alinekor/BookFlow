@@ -1,4 +1,4 @@
-package com.example.bookflow.presentation.details
+package com.example.bookflow.presentation.search
 
 import androidx.lifecycle.ViewModel
 import com.example.bookflow.data.model.Book
@@ -29,6 +29,7 @@ class SearchViewModel : ViewModel() {
             is SearchEvent.OnExpandedChange -> onExpandedChange(event.newValue)
             SearchEvent.OnSearchClick -> onSearch()
             SearchEvent.OnClearQueryClick -> onClearQueryClick()
+            SearchEvent.OnRetrySearch -> onRetrySearchClick()
         }
     }
 
@@ -51,6 +52,10 @@ class SearchViewModel : ViewModel() {
         } else {
             _isSearchExpanded.value = false
         }
+    }
+
+    private fun onRetrySearchClick() {
+        //TODO
     }
 }
 

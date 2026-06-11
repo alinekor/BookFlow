@@ -1,4 +1,4 @@
-package com.example.bookflow.presentation.details
+package com.example.bookflow.presentation.search
 
 import com.example.bookflow.data.model.Book
 
@@ -14,7 +14,5 @@ sealed class SearchResultState {
         val books: List<Book>,
     ) : SearchResultState()
 
-    data class Error(
-        val errorMessage: String,
-    ) : SearchResultState()
+    data object Error : SearchResultState()
 }
