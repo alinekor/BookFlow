@@ -5,14 +5,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -20,8 +17,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bookflow.ui.components.AppBottomBar
-import com.example.bookflow.ui.extensions.toBottomBarItems
-import com.example.bookflow.ui.navigation.AppBottomDestination
+import com.example.bookflow.ui.extensions.getAvailableBottomBarItems
+import com.example.bookflow.ui.extensions.isInHierarchy
 import com.example.bookflow.ui.navigation.AppNavGraph
 import com.example.bookflow.ui.theme.BookFlowTheme
 
@@ -32,24 +29,23 @@ fun BookFlowApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    var selectedBottomRoute by rememberSaveable {
-        mutableStateOf(AppBottomDestination.Search.name)
-    }
+    val bottomBarItems = remember { getAvailableBottomBarItems() }
 
     Scaffold(
         bottomBar = {
             AppBottomBar(
-                items = AppBottomDestination.entries.toList().toBottomBarItems(),
+                items = bottomBarItems,
                 isItemSelected = { navItem ->
-                    selectedBottomRoute == navItem.route
+                    currentDestination.isInHierarchy(navItem.graphRoute::class)
                 },
                 onItemClick = { navItem ->
-                    if (selectedBottomRoute == navItem.route) return@AppBottomBar
-                    selectedBottomRoute = navItem.route
+                    val isSameTab = currentDestination.isInHierarchy(navItem.graphRoute::class)
 
-                    navController.navigate(navItem.route) {
-                        popUpTo(navController.graph.findStartDestination().id)
-                        launchSingleTop = true
+                    if (!isSameTab) {
+                        navController.navigate(navItem.graphRoute) {
+                            popUpTo(navController.graph.findStartDestination().id)
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
@@ -59,9 +55,7 @@ fun BookFlowApp(
     ) { innerPadding ->
         AppNavGraph(
             navController = navController,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            paddingValues = innerPadding,
         )
     }
 }

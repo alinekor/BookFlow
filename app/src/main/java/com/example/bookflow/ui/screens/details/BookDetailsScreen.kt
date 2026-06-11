@@ -52,14 +52,14 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 fun BookDetailsScreen(
     bookKey: String,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    val stubBookDetails = getInitBookDetails()
-    val bookDetails = stubBookDetails.copy(
-        key = bookKey,
-        title = "${stubBookDetails.title} - $bookKey"
-    )
-
+    val bookDetails = remember(bookKey) {
+        val stubBookDetails = getInitBookDetails()
+        stubBookDetails.copy(
+            key = bookKey,
+            title = "${stubBookDetails.title} - $bookKey"
+        )
+    }
     var savedToLibrary by rememberSaveable { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
@@ -68,7 +68,7 @@ fun BookDetailsScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             BackTopAppBar(
@@ -97,7 +97,9 @@ private fun BookContent(
     bookDetails: BookDetails,
     scrollState: ScrollState,
 ) {
-    val authors = bookDetails.authors.takeIf { it.isNotEmpty() }?.joinToString(",")
+    val authors = remember(bookDetails.authors) {
+        formatAuthors(bookDetails.authors)
+    }
     val tags = bookDetails.subjects.takeIf { it.isNotEmpty() }
 
     Column(
@@ -170,6 +172,10 @@ private fun BookContent(
             )
         }
     }
+}
+
+private fun formatAuthors(authors: List<String>): String? {
+    return authors.takeIf { it.isNotEmpty() }?.joinToString(",")
 }
 
 @Preview(name = "Light Theme", showBackground = true)

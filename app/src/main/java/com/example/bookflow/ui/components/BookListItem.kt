@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -31,7 +32,9 @@ fun BookListItem(
     onBookClick: (key: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val authors = item.authors.takeIf { it.isNotEmpty() }?.joinToString(",")
+    val authors = remember(item.authors) {
+        formatAuthors(item.authors)
+    }
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -72,6 +75,10 @@ fun BookListItem(
             }
         }
     }
+}
+
+private fun formatAuthors(authors: List<String>): String? {
+    return authors.takeIf { it.isNotEmpty() }?.joinToString(",")
 }
 
 @Preview(name = "Light Theme", showBackground = true)

@@ -14,11 +14,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
-fun MyShelfScreen(modifier: Modifier = Modifier) {
+fun MyShelfScreen() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(color = Color.LightGray),
     ) {

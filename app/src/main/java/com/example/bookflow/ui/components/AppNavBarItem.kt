@@ -14,10 +14,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.bookflow.R
+import com.example.bookflow.ui.navigation.GraphRoute
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 data class NavBarItem(
-    val route: String,
+    val graphRoute: GraphRoute,
     val icon: ImageVector,
     val labelRes: Int,
 )
@@ -46,7 +47,7 @@ fun AppNavBarItemPreview() {
         NavigationBar {
             AppNavBarItem(
                 item = NavBarItem(
-                    route = "search",
+                    graphRoute = GraphRoute.SearchGraph,
                     icon = Icons.Outlined.Search,
                     labelRes = R.string.bottom_nav_destination_search
                 ),
