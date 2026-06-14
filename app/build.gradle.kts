@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.icons)
     implementation(libs.androidx.compose.navigation)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.squareup.retrofit2.retrofit)
     implementation(libs.squareup.retrofit2.converter.gson)
