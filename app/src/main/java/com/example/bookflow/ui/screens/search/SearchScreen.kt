@@ -106,7 +106,7 @@ private fun SearchScreen(
                 booksRefreshLoadState is LoadState.Loading -> SearchProgressState()
 
                 booksRefreshLoadState is LoadState.Error -> SearchErrorState(
-                    onRetryClick = { books::retry }
+                    onRetryClick = { books.retry() }
                 )
 
                 booksRefreshLoadState is LoadState.NotLoading && books.itemCount == 0 -> SearchEmptyState(
@@ -120,7 +120,7 @@ private fun SearchScreen(
                         onBookClick = {
                             onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
                         },
-                        onRetryClick = { books::retry },
+                        onRetryClick = { books.retry() },
                     )
                 }
             }
