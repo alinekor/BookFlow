@@ -2,6 +2,7 @@
     <string name="app_name">BookFlow</string>
 
     <string name="search_hint_default">Search</string>
+
     <string name="search_initial_state_title">Find your next book</string>
     <string name="search_initial_state_description">Search by title, author, or keyword to discover books</string>
     <string name="search_empty_state_title">No books found</string>
@@ -9,6 +10,9 @@
     <string name="search_error_state_title">Something went wrong</string>
     <string name="search_error_state_description">Something went wrong while searching. Try again.</string>
     <string name="search_error_retry_button">Retry</string>
+
+    <string name="page_loading_error_text">Page loading error</string>
+    <string name="retry_button">Retry</string>
 
     <string name="bottom_nav_destination_search">Search</string>
     <string name="bottom_nav_destination_my_shelf">My shelf</string>
