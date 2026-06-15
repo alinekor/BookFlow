@@ -1,4 +1,4 @@
-package com.example.bookflow.ui.components
+package com.example.bookflow.ui.components.tags
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke

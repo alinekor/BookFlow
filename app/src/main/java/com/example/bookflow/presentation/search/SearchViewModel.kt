@@ -2,66 +2,42 @@ package com.example.bookflow.presentation.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.bookflow.data.model.Book
-import com.example.bookflow.data.model.BookCover
+import com.example.bookflow.data.repository.BookRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
 @OptIn(FlowPreview::class)
 class SearchViewModel : ViewModel() {
 
-    private val _query = MutableStateFlow("")
-    val query: StateFlow<String> = _query.asStateFlow()
+    private val repository = BookRepository()
 
-    private val _isSearchExpanded = MutableStateFlow(false)
-    val isSearchExpanded: StateFlow<Boolean> = _isSearchExpanded.asStateFlow()
+    private val _screenState = MutableStateFlow(SearchScreenState.INITIAL)
+    val screenState: StateFlow<SearchScreenState> = _screenState.asStateFlow()
 
-    private val _searchState = MutableStateFlow<SearchResultState>(SearchResultState.Initial)
-    val searchState: StateFlow<SearchResultState> = _searchState.asStateFlow()
-
-    private val initBooks: List<Book> = getInitBooks()
-
-    init {
-        viewModelScope.launch {
-            _query
-                .debounce(QUERY_DEBOUNCE_MS)
-                .distinctUntilChanged()
-                .collectLatest { query -> search(query) }
-        }
-    }
-
-    private suspend fun search(query: String) {
-        if (query.isBlank()) {
-            _searchState.value = SearchResultState.Initial
-            return
-        }
-
-        _searchState.value = SearchResultState.Loading
-        delay(2000L) // for test
-
-        try {
-            val filteredBooks = initBooks.filter {
-                it.title.contains(query.trim(), ignoreCase = true)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val books: Flow<PagingData<Book>> =
+        screenState
+            .debounce(QUERY_DEBOUNCE_MS)
+            .map { it.query }
+            .filter { it.isNotBlank() }
+            .distinctUntilChanged()
+            .flatMapLatest { query ->
+                repository.searchBooks(query = query)
             }
-
-            _searchState.value = if (filteredBooks.isEmpty()) {
-                SearchResultState.EmptySearch
-            } else {
-                SearchResultState.Content(filteredBooks)
-            }
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            _searchState.value = SearchResultState.Error
-        }
-    }
+            .cachedIn(viewModelScope)
 
     fun onSearchEvent(event: SearchEvent) {
         when (event) {
@@ -69,50 +45,42 @@ class SearchViewModel : ViewModel() {
             is SearchEvent.OnExpandedChange -> onExpandedChange(event.newValue)
             SearchEvent.OnSearchClick -> onSearch()
             SearchEvent.OnClearQueryClick -> onClearQueryClick()
-            SearchEvent.OnRetrySearch -> onRetrySearchClick()
         }
     }
 
     private fun onQueryChanged(newValue: String) {
-        _query.value = newValue
-    }
-
-    private fun onExpandedChange(newValue: Boolean) {
-        _isSearchExpanded.value = newValue
-    }
-
-    private fun onSearch() {
-        if (query.value.isNotEmpty()) return
-        _isSearchExpanded.value = false
-    }
-
-    private fun onClearQueryClick() {
-        if (query.value.isNotEmpty()) {
-            _query.value = ""
-        } else {
-            _isSearchExpanded.value = false
+        _screenState.update {
+            it.copy(query = newValue)
         }
     }
 
-    private fun onRetrySearchClick() {
-        viewModelScope.launch {
-            search(_query.value)
+    private fun onExpandedChange(newValue: Boolean) {
+        _screenState.update {
+            it.copy(isSearchExpanded = newValue)
+        }
+    }
+
+    private fun onSearch() {
+        if (screenState.value.query.isNotEmpty()) return
+
+        _screenState.update {
+            it.copy(isSearchExpanded = false)
+        }
+    }
+
+    private fun onClearQueryClick() {
+        if (screenState.value.query.isNotEmpty()) {
+            _screenState.update {
+                it.copy(query = "")
+            }
+        } else {
+            _screenState.update {
+                it.copy(isSearchExpanded = false)
+            }
         }
     }
 
     companion object {
-        private const val QUERY_DEBOUNCE_MS = 300L
-    }
-}
-
-fun getInitBooks(): List<Book> {
-    return List(10) { i ->
-        Book(
-            key = "OL27448W_$i",
-            title = "The Lord of the Rings $i",
-            authors = listOf("J. R. R. Tolkien"),
-            publishYear = 1954,
-            cover = BookCover(id = 8231856),
-        )
+        private const val QUERY_DEBOUNCE_MS = 500L
     }
 }

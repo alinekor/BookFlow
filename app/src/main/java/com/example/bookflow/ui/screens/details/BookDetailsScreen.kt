@@ -43,9 +43,9 @@ import androidx.compose.ui.unit.sp
 import com.example.bookflow.R
 import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.data.model.BookDetails
-import com.example.bookflow.ui.components.BackTopAppBar
-import com.example.bookflow.ui.components.OutlinedTag
-import com.example.bookflow.ui.components.TagFlowRow
+import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
+import com.example.bookflow.ui.components.tags.OutlinedTag
+import com.example.bookflow.ui.components.tags.TagFlowRow
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable

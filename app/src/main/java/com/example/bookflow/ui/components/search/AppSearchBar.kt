@@ -1,4 +1,4 @@
-package com.example.bookflow.ui.components
+package com.example.bookflow.ui.components.search
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.ColumnScope
