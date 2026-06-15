@@ -46,6 +46,7 @@ import com.example.bookflow.ui.components.books.BookListItem
 import com.example.bookflow.ui.components.paging.PagingLoadStateView
 import com.example.bookflow.ui.components.placehoders.StatusMessage
 import com.example.bookflow.ui.components.search.AppSearchBar
+import com.example.bookflow.ui.extensions.isValidSearchQuery
 import com.example.bookflow.ui.theme.BookFlowTheme
 import kotlinx.coroutines.flow.flowOf
 
@@ -98,7 +99,7 @@ private fun SearchScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             when {
-                screenState.query.isBlank() -> SearchEmptyState(
+                !screenState.query.isValidSearchQuery() -> SearchEmptyState(
                     titleRes = R.string.search_initial_state_title,
                     descriptionRes = R.string.search_initial_state_description,
                 )
