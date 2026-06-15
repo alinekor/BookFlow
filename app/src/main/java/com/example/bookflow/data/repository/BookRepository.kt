@@ -13,8 +13,8 @@ class BookRepository {
     private val bookNetworkService = BookNetworkService()
 
     private val pagingConfig = PagingConfig(
-        initialLoadSize = SEARCH_BOOKS_INITIAL_SIZE,
         pageSize = SEARCH_BOOKS_PAGE_SIZE,
+        initialLoadSize = SEARCH_BOOKS_PAGE_SIZE,
         enablePlaceholders = false,
     )
 
@@ -24,6 +24,7 @@ class BookRepository {
             pagingSourceFactory = {
                 BookSearchPagingSource(
                     networkService = bookNetworkService,
+                    pageSize = SEARCH_BOOKS_PAGE_SIZE,
                     query = query,
                 )
             }
@@ -32,6 +33,5 @@ class BookRepository {
 
     companion object {
         private const val SEARCH_BOOKS_PAGE_SIZE = 20
-        private const val SEARCH_BOOKS_INITIAL_SIZE = 30
     }
 }

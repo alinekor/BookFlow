@@ -35,6 +35,7 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
@@ -198,7 +199,7 @@ fun BooksList(
     LazyColumn {
         items(
             count = books.itemCount,
-            key = { index -> books[index]?.key ?: "book_$index" }
+            key = books.itemKey { it.key },
         ) { index ->
             books[index]?.let { book ->
                 BookListItem(

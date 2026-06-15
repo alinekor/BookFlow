@@ -7,6 +7,7 @@ import com.example.bookflow.data.remote.BookNetworkService
 
 class BookSearchPagingSource(
     private val networkService: BookNetworkService,
+    private val pageSize: Int,
     private val query: String,
 ) : PagingSource<Int, Book>() {
 
@@ -17,13 +18,13 @@ class BookSearchPagingSource(
             val books = networkService.searchBooks(
                 query = query,
                 nextPage = nextPage,
-                limit = params.loadSize,
+                limit = pageSize,
             )
 
             LoadResult.Page(
                 data = books,
                 prevKey = if (nextPage == 1) null else nextPage - 1,
-                nextKey = if (books.isEmpty()) null else nextPage + 1
+                nextKey = if (books.size < pageSize) null else nextPage + 1
             )
         } catch (e: Exception) {
             LoadResult.Error(e)
