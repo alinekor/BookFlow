@@ -1,6 +1,7 @@
 package com.example.bookflow.ui.components.paging
 
 import android.content.res.Configuration
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,21 +17,25 @@ fun PagingLoadStateView(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (loadState) {
-        is LoadState.Loading -> {
-            PagingLoadingItem(modifier = modifier)
-        }
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        when (loadState) {
+            is LoadState.Loading -> {
+                PagingLoadingItem(modifier = modifier)
+            }
 
-        is LoadState.Error -> {
-            PagingErrorItem(
-                errorMessage = loadState.error.message
-                    ?: stringResource(R.string.page_loading_error_text),
-                onRetry = onRetry,
-                modifier = modifier,
-            )
-        }
+            is LoadState.Error -> {
+                PagingErrorItem(
+                    errorMessage = loadState.error.message
+                        ?: stringResource(R.string.page_loading_error_text),
+                    onRetry = onRetry,
+                    modifier = modifier,
+                )
+            }
 
-        is LoadState.NotLoading -> {}
+            is LoadState.NotLoading -> {}
+        }
     }
 }
 
@@ -39,12 +44,10 @@ fun PagingLoadStateView(
 @Composable
 fun PagingLoadingStatePreview() {
     BookFlowTheme {
-        Surface {
-            PagingLoadStateView(
-                loadState = LoadState.Loading,
-                onRetry = {}
-            )
-        }
+        PagingLoadStateView(
+            loadState = LoadState.Loading,
+            onRetry = {}
+        )
     }
 }
 
@@ -53,11 +56,9 @@ fun PagingLoadingStatePreview() {
 @Composable
 fun PagingErrorStatePreview() {
     BookFlowTheme {
-        Surface {
-            PagingLoadStateView(
-                loadState = LoadState.Error(RuntimeException("Page loading error")),
-                onRetry = {}
-            )
-        }
+        PagingLoadStateView(
+            loadState = LoadState.Error(RuntimeException("Page loading error")),
+            onRetry = {}
+        )
     }
 }

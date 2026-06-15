@@ -78,7 +78,7 @@ fun BookListItem(
 }
 
 private fun formatAuthors(authors: List<String>): String? {
-    return authors.takeIf { it.isNotEmpty() }?.joinToString(",")
+    return authors.takeIf { it.isNotEmpty() }?.joinToString(", ")
 }
 
 @Preview(name = "Light Theme", showBackground = true)
