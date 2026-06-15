@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.remote.BookNetworkService
+import kotlin.coroutines.cancellation.CancellationException
 
 class BookSearchPagingSource(
     private val networkService: BookNetworkService,
@@ -27,6 +28,7 @@ class BookSearchPagingSource(
                 nextKey = if (books.size < pageSize) null else nextPage + 1
             )
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             LoadResult.Error(e)
         }
     }

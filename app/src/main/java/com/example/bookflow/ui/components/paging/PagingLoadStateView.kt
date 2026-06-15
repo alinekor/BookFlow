@@ -27,8 +27,7 @@ fun PagingLoadStateView(
 
             is LoadState.Error -> {
                 PagingErrorItem(
-                    errorMessage = loadState.error.message
-                        ?: stringResource(R.string.page_loading_error_text),
+                    errorMessage = stringResource(R.string.page_loading_error_text),
                     onRetry = onRetry,
                     modifier = modifier,
                 )
