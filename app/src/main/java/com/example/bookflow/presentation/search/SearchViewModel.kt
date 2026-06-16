@@ -3,7 +3,7 @@ package com.example.bookflow.presentation.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookflow.data.model.Book
-import com.example.bookflow.data.model.BookCover
+import com.example.bookflow.ui.screens.search.getInitBooks
 import com.example.bookflow.ui.utils.imitateLoading
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -117,17 +117,5 @@ class SearchViewModel : ViewModel() {
 
     companion object {
         private const val QUERY_DEBOUNCE_MS = 300L
-    }
-}
-
-fun getInitBooks(): List<Book> {
-    return List(10) { i ->
-        Book(
-            key = "OL27448W_$i",
-            title = "The Lord of the Rings $i",
-            authors = listOf("J. R. R. Tolkien"),
-            publishYear = 1954,
-            cover = BookCover(id = 8231856),
-        )
     }
 }

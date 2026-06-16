@@ -37,7 +37,6 @@ import com.example.bookflow.data.model.Book
 import com.example.bookflow.presentation.search.SearchEvent
 import com.example.bookflow.presentation.search.SearchState
 import com.example.bookflow.presentation.search.SearchViewModel
-import com.example.bookflow.presentation.search.getInitBooks
 import com.example.bookflow.ui.components.AppSearchBar
 import com.example.bookflow.ui.components.BookListItem
 import com.example.bookflow.ui.components.StatusMessage
