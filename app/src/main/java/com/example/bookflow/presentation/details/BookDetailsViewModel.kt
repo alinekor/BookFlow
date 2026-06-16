@@ -7,13 +7,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
+import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.repository.BookRepository
 import com.example.bookflow.ui.navigation.AppDestination
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class BookDetailsViewModel(
@@ -23,8 +26,31 @@ class BookDetailsViewModel(
     private val repository = BookRepository()
     private val screenArgs = savedStateHandle.toRoute<AppDestination.BookDetails>()
 
-    private val _state = MutableStateFlow<BookDetailsScreenState>(BookDetailsScreenState.Initial)
-    val state: StateFlow<BookDetailsScreenState> = _state.asStateFlow()
+    private val bookDetails = MutableStateFlow<Result<BookDetails>?>(null)
+
+    val state: StateFlow<BookDetailsScreenState> =
+        combine(
+            bookDetails,
+            repository.observeSavedToLibrary(
+                bookKey = screenArgs.bookKey
+            ),
+        ) { bookDetailsResult, savedToLibrary ->
+            when {
+                bookDetailsResult == null -> BookDetailsScreenState.Loading
+
+                bookDetailsResult.isFailure -> BookDetailsScreenState.Error
+
+                else -> BookDetailsScreenState.Content(
+                    bookDetails = bookDetailsResult.getOrThrow(),
+                    savedToLibrary = savedToLibrary,
+                )
+            }
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = BookDetailsScreenState.Initial,
+            )
 
     private var loadBookJob: Job? = null
 
@@ -35,20 +61,12 @@ class BookDetailsViewModel(
     private fun loadBookDetails() {
         loadBookJob?.cancel()
         loadBookJob = viewModelScope.launch {
-            _state.value = BookDetailsScreenState.Loading
+            bookDetails.value = null
 
-            try {
-                val bookDetails = repository.loadBookDetails(
+            bookDetails.value = runCatching {
+                repository.loadBookDetails(
                     bookKey = screenArgs.bookKey,
                 )
-                _state.value = BookDetailsScreenState.Content(
-                    bookDetails = bookDetails,
-                    savedToLibrary = false, //todo достаём флаг из базы
-                )
-
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                _state.value = BookDetailsScreenState.Error
             }
         }
     }
@@ -61,7 +79,20 @@ class BookDetailsViewModel(
     }
 
     private fun onSaveToLibraryClick() {
-        //TODO
+        val content = state.value as? BookDetailsScreenState.Content ?: return
+        val book = content.bookDetails
+
+        viewModelScope.launch {
+            try {
+                if (content.savedToLibrary) {
+                    repository.removeBookFromLibrary(bookKey = book.key)
+                } else {
+                    repository.saveBookToLibrary(book = book)
+                }
+            } catch (e: Throwable) {
+                if (e is CancellationException) throw e
+            }
+        }
     }
 
     companion object {

@@ -9,9 +9,14 @@ import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 class BookRepository {
+
+    private val tempSavedBooks = MutableStateFlow(emptyList<String>())
 
     private val bookNetworkService = BookNetworkService()
 
@@ -36,6 +41,24 @@ class BookRepository {
 
     suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(Dispatchers.IO) {
         bookNetworkService.loadBookDetails(bookKey)
+    }
+
+    fun observeSavedToLibrary(bookKey: String): Flow<Boolean> {
+        return tempSavedBooks.map { savedBooks ->
+            bookKey in savedBooks
+        }
+    }
+
+    suspend fun saveBookToLibrary(book: BookDetails) = withContext(Dispatchers.IO) {
+        tempSavedBooks.update { savedBooks ->
+            savedBooks + book.key
+        }
+    }
+
+    suspend fun removeBookFromLibrary(bookKey: String) = withContext(Dispatchers.IO) {
+        tempSavedBooks.update { savedBooks ->
+            savedBooks - bookKey
+        }
     }
 
     companion object {
