@@ -10,6 +10,7 @@ import androidx.navigation.toRoute
 import com.example.bookflow.data.repository.BookRepository
 import com.example.bookflow.ui.navigation.AppDestination
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,12 +26,15 @@ class BookDetailsViewModel(
     private val _state = MutableStateFlow<BookDetailsScreenState>(BookDetailsScreenState.Initial)
     val state: StateFlow<BookDetailsScreenState> = _state.asStateFlow()
 
+    private var loadBookJob: Job? = null
+
     init {
         loadBookDetails()
     }
 
     private fun loadBookDetails() {
-        viewModelScope.launch {
+        loadBookJob?.cancel()
+        loadBookJob = viewModelScope.launch {
             _state.value = BookDetailsScreenState.Loading
 
             try {
@@ -51,6 +55,7 @@ class BookDetailsViewModel(
 
     fun onScreenEvent(event: BookDetailsEvent) {
         when (event) {
+            BookDetailsEvent.OnRetryClick -> loadBookDetails()
             BookDetailsEvent.OnSaveToLibraryClick -> onSaveToLibraryClick()
         }
     }

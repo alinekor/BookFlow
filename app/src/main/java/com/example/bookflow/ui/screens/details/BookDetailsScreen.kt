@@ -117,7 +117,7 @@ private fun BookDetailsScreen(
 
             BookDetailsScreenState.Error -> BookErrorState(
                 innerPadding = innerPadding,
-                onRetryClick = {} //todo
+                onRetryClick = { onScreenEvent(BookDetailsEvent.OnRetryClick) }
             )
 
             is BookDetailsScreenState.Content -> BookContent(
