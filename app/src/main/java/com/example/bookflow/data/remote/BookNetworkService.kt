@@ -42,7 +42,15 @@ class BookNetworkService {
     }
 
     suspend fun loadBookDetails(bookKey: String): BookDetails {
-        return openLibraryApi.loadBookDetails(bookKey).toDomain()
+        val bookDetailsDto = openLibraryApi.loadBookDetails(bookKey)
+
+        val authorNames = bookDetailsDto.authors
+            ?.map { authorDto -> authorDto.authorKey.key }
+            ?.map { authorKey -> openLibraryApi.loadAuthor(authorKey) }
+            ?.map { author -> author.name }
+            .orEmpty()
+
+        return bookDetailsDto.toDomain(authorNames = authorNames)
     }
 
     private fun BookNetworkDto.toDomain(): Book = Book(
@@ -53,11 +61,11 @@ class BookNetworkService {
         cover = coverId?.let(::BookCover),
     )
 
-    private fun BookDetailsNetworkDto.toDomain(): BookDetails = BookDetails(
+    private fun BookDetailsNetworkDto.toDomain(authorNames: List<String>) = BookDetails(
         key = this.key,
         title = this.title,
         description = this.description?.value,
-        authors = this.authors.orEmpty(),
+        authors = authorNames,
         subjects = this.subjects.orEmpty(),
         publishYear = this.publishYear,
         cover = covers?.firstOrNull()?.let(::BookCover),
