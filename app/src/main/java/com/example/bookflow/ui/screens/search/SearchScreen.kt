@@ -44,7 +44,7 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun SearchScreen(
-    onNavAction: (action: SearchNavAction) -> Unit,
+    router: ISearchRouter,
     viewModel: SearchViewModel = viewModel(),
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
@@ -54,7 +54,7 @@ fun SearchScreen(
         isSearchExpanded = screenState.isSearchExpanded,
         searchState = screenState.searchState,
         onScreenEvent = viewModel::onScreenEvent,
-        onNavAction = onNavAction,
+        router = router,
     )
 }
 
@@ -64,7 +64,7 @@ private fun SearchScreen(
     isSearchExpanded: Boolean,
     searchState: SearchState,
     onScreenEvent: (event: SearchEvent) -> Unit,
-    onNavAction: (action: SearchNavAction) -> Unit,
+    router: ISearchRouter,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -104,7 +104,7 @@ private fun SearchScreen(
                 is SearchState.Content -> SearchContentState(
                     books = searchState.books,
                     onBookClick = {
-                        onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
+                        router.openBookDetails(bookKey = it)
                     }
                 )
 
@@ -252,7 +252,7 @@ fun SearchProgressStatePreview() {
                 isSearchExpanded = true,
                 searchState = SearchState.Loading,
                 onScreenEvent = {},
-                onNavAction = {},
+                router = PreviewSearchRouter,
             )
         }
     }
@@ -269,7 +269,7 @@ fun SearchEmptyStatePreview() {
                 isSearchExpanded = true,
                 searchState = SearchState.EmptySearch,
                 onScreenEvent = {},
-                onNavAction = {},
+                router = PreviewSearchRouter,
             )
         }
     }
@@ -288,7 +288,7 @@ fun SearchContentStatePreview() {
                     books = getInitBooks()
                 ),
                 onScreenEvent = {},
-                onNavAction = {},
+                router = PreviewSearchRouter,
             )
         }
     }
@@ -305,7 +305,7 @@ fun SearchErrorStatePreview() {
                 isSearchExpanded = true,
                 searchState = SearchState.Error,
                 onScreenEvent = {},
-                onNavAction = {},
+                router = PreviewSearchRouter,
             )
         }
     }
