@@ -1,7 +1,10 @@
 package com.example.bookflow.ui.screens.details
 
 import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -16,10 +19,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,6 +56,7 @@ import com.example.bookflow.presentation.details.BookDetailsScreenState
 import com.example.bookflow.presentation.details.BookDetailsViewModel
 import com.example.bookflow.presentation.search.getInitBookDetails
 import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
+import com.example.bookflow.ui.components.placehoders.StatusMessage
 import com.example.bookflow.ui.components.tags.OutlinedTag
 import com.example.bookflow.ui.components.tags.TagFlowRow
 import com.example.bookflow.ui.theme.BookFlowTheme
@@ -105,9 +113,12 @@ private fun BookDetailsScreen(
         when (screenState) {
             BookDetailsScreenState.Initial -> {}
 
-            BookDetailsScreenState.Loading -> {} //TODO
+            BookDetailsScreenState.Loading -> BookLoadingState(innerPadding)
 
-            BookDetailsScreenState.Error -> {} //TODO
+            BookDetailsScreenState.Error -> BookErrorState(
+                innerPadding = innerPadding,
+                onRetryClick = {} //todo
+            )
 
             is BookDetailsScreenState.Content -> BookContent(
                 innerPadding = innerPadding,
@@ -115,6 +126,19 @@ private fun BookDetailsScreen(
                 scrollState = scrollState,
             )
         }
+    }
+}
+
+@Composable
+private fun BookLoadingState(innerPadding: PaddingValues) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(bottom = 56.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
     }
 }
 
@@ -206,6 +230,44 @@ private fun BookContent(
     }
 }
 
+@Composable
+fun BookErrorState(
+    innerPadding: PaddingValues,
+    onRetryClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(bottom = 56.dp, start = 20.dp, end = 20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        StatusMessage(
+            image = {
+                Image(
+                    imageVector = Icons.Outlined.ErrorOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(72.dp),
+                    colorFilter = ColorFilter.tint(
+                        MaterialTheme.colorScheme.primary,
+                    )
+                )
+            },
+            title = stringResource(R.string.book_details_error_state_title),
+            description = stringResource(R.string.book_details_error_state_description),
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedButton(onClick = onRetryClick) {
+            Text(
+                text = stringResource(R.string.retry_button),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+        }
+    }
+}
+
 private fun formatAuthors(authors: List<String>): String? {
     return authors.takeIf { it.isNotEmpty() }?.joinToString(", ")
 }
@@ -213,13 +275,39 @@ private fun formatAuthors(authors: List<String>): String? {
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Night Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun BookDetailsContentStatePreview() {
+fun BookLoadingStatePreview() {
+    BookFlowTheme {
+        BookDetailsScreen(
+            screenState = BookDetailsScreenState.Loading,
+            onScreenEvent = {},
+            onNavAction = {},
+        )
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Night Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun BookContentStatePreview() {
     BookFlowTheme {
         BookDetailsScreen(
             screenState = BookDetailsScreenState.Content(
                 bookDetails = getInitBookDetails(),
                 savedToLibrary = true,
             ),
+            onScreenEvent = {},
+            onNavAction = {},
+        )
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Night Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun BookErrorStatePreview() {
+    BookFlowTheme {
+        BookDetailsScreen(
+            screenState = BookDetailsScreenState.Error,
             onScreenEvent = {},
             onNavAction = {},
         )
