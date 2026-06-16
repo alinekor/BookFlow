@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.ui.utils.imitateLoading
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(FlowPreview::class)
@@ -45,8 +47,10 @@ class SearchViewModel : ViewModel() {
         imitateLoading()
 
         try {
-            val filteredBooks = initBooks.filter {
-                it.title.contains(query.trim(), ignoreCase = true)
+            val filteredBooks = withContext(Dispatchers.Default) {
+                initBooks.filter {
+                    it.title.contains(query.trim(), ignoreCase = true)
+                }
             }
 
             updateSearchState(
