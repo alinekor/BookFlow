@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
+import com.example.bookflow.ui.utils.imitateLoading
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,7 +42,7 @@ class SearchViewModel : ViewModel() {
         }
 
         updateSearchState(newState = SearchState.Loading)
-        delay(2000L) // for test
+        imitateLoading()
 
         try {
             val filteredBooks = initBooks.filter {
