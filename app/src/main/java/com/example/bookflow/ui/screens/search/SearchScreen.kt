@@ -35,7 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.presentation.search.SearchEvent
-import com.example.bookflow.presentation.search.SearchResultState
+import com.example.bookflow.presentation.search.SearchState
 import com.example.bookflow.presentation.search.SearchViewModel
 import com.example.bookflow.presentation.search.getInitBooks
 import com.example.bookflow.ui.components.AppSearchBar
@@ -48,15 +48,13 @@ fun SearchScreen(
     onNavAction: (action: SearchNavAction) -> Unit,
     viewModel: SearchViewModel = viewModel(),
 ) {
-    val query by viewModel.query.collectAsStateWithLifecycle()
-    val isSearchExpanded by viewModel.isSearchExpanded.collectAsStateWithLifecycle()
-    val searchState by viewModel.searchState.collectAsStateWithLifecycle()
+    val screenState by viewModel.screenState.collectAsStateWithLifecycle()
 
     SearchScreen(
-        query = query,
-        isSearchExpanded = isSearchExpanded,
-        searchState = searchState,
-        onSearchEvent = viewModel::onSearchEvent,
+        query = screenState.query,
+        isSearchExpanded = screenState.isSearchExpanded,
+        searchState = screenState.searchState,
+        onScreenEvent = viewModel::onScreenEvent,
         onNavAction = onNavAction,
     )
 }
@@ -65,8 +63,8 @@ fun SearchScreen(
 private fun SearchScreen(
     query: String,
     isSearchExpanded: Boolean,
-    searchState: SearchResultState,
-    onSearchEvent: (event: SearchEvent) -> Unit,
+    searchState: SearchState,
+    onScreenEvent: (event: SearchEvent) -> Unit,
     onNavAction: (action: SearchNavAction) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -75,45 +73,45 @@ private fun SearchScreen(
         AppSearchBar(
             query = query,
             onQueryChange = {
-                onSearchEvent(SearchEvent.OnQueryChange(it))
+                onScreenEvent(SearchEvent.OnQueryChange(it))
             },
             onSearch = {
                 focusManager.clearFocus()
-                onSearchEvent(SearchEvent.OnSearchClick)
+                onScreenEvent(SearchEvent.OnSearchClick)
             },
             expanded = isSearchExpanded,
             onExpandedChange = {
-                onSearchEvent(SearchEvent.OnExpandedChange(it))
+                onScreenEvent(SearchEvent.OnExpandedChange(it))
             },
             trailingIcon = if (isSearchExpanded) Icons.Default.Close else null,
             onTrailingIconClick = {
-                onSearchEvent(SearchEvent.OnClearQueryClick)
+                onScreenEvent(SearchEvent.OnClearQueryClick)
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             when (searchState) {
-                SearchResultState.Initial -> SearchEmptyState(
+                SearchState.Initial -> SearchEmptyState(
                     titleRes = R.string.search_initial_state_title,
                     descriptionRes = R.string.search_initial_state_description,
                 )
 
-                SearchResultState.Loading -> SearchProgressState()
+                SearchState.Loading -> SearchProgressState()
 
-                SearchResultState.EmptySearch -> SearchEmptyState(
+                SearchState.EmptySearch -> SearchEmptyState(
                     titleRes = R.string.search_empty_state_title,
                     descriptionRes = R.string.search_empty_state_description,
                 )
 
-                is SearchResultState.Content -> SearchContentState(
+                is SearchState.Content -> SearchContentState(
                     books = searchState.books,
                     onBookClick = {
                         onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
                     }
                 )
 
-                is SearchResultState.Error -> SearchErrorState(
+                is SearchState.Error -> SearchErrorState(
                     onRetryClick = {
-                        onSearchEvent(SearchEvent.OnRetrySearch)
+                        onScreenEvent(SearchEvent.OnRetrySearch)
                     }
                 )
             }
@@ -253,8 +251,8 @@ fun SearchProgressStatePreview() {
             SearchScreen(
                 query = "the",
                 isSearchExpanded = true,
-                searchState = SearchResultState.Loading,
-                onSearchEvent = {},
+                searchState = SearchState.Loading,
+                onScreenEvent = {},
                 onNavAction = {},
             )
         }
@@ -270,8 +268,8 @@ fun SearchEmptyStatePreview() {
             SearchScreen(
                 query = "th",
                 isSearchExpanded = true,
-                searchState = SearchResultState.EmptySearch,
-                onSearchEvent = {},
+                searchState = SearchState.EmptySearch,
+                onScreenEvent = {},
                 onNavAction = {},
             )
         }
@@ -287,10 +285,10 @@ fun SearchContentStatePreview() {
             SearchScreen(
                 query = "the",
                 isSearchExpanded = true,
-                searchState = SearchResultState.Content(
+                searchState = SearchState.Content(
                     books = getInitBooks()
                 ),
-                onSearchEvent = {},
+                onScreenEvent = {},
                 onNavAction = {},
             )
         }
@@ -306,8 +304,8 @@ fun SearchErrorStatePreview() {
             SearchScreen(
                 query = "the",
                 isSearchExpanded = true,
-                searchState = SearchResultState.Error,
-                onSearchEvent = {},
+                searchState = SearchState.Error,
+                onScreenEvent = {},
                 onNavAction = {},
             )
         }

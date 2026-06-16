@@ -12,26 +12,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(FlowPreview::class)
 class SearchViewModel : ViewModel() {
 
-    private val _query = MutableStateFlow("")
-    val query: StateFlow<String> = _query.asStateFlow()
-
-    private val _isSearchExpanded = MutableStateFlow(false)
-    val isSearchExpanded: StateFlow<Boolean> = _isSearchExpanded.asStateFlow()
-
-    private val _searchState = MutableStateFlow<SearchResultState>(SearchResultState.Initial)
-    val searchState: StateFlow<SearchResultState> = _searchState.asStateFlow()
+    private val _screenState = MutableStateFlow(SearchScreenState.INITIAL)
+    val screenState: StateFlow<SearchScreenState> = _screenState.asStateFlow()
 
     private val initBooks: List<Book> = getInitBooks()
 
     init {
         viewModelScope.launch {
-            _query
+            screenState
+                .map { it.query }
                 .debounce(QUERY_DEBOUNCE_MS)
                 .distinctUntilChanged()
                 .collectLatest { query -> search(query) }
@@ -40,11 +37,11 @@ class SearchViewModel : ViewModel() {
 
     private suspend fun search(query: String) {
         if (query.isBlank()) {
-            _searchState.value = SearchResultState.Initial
+            updateSearchState(newState = SearchState.Initial)
             return
         }
 
-        _searchState.value = SearchResultState.Loading
+        updateSearchState(newState = SearchState.Loading)
         delay(2000L) // for test
 
         try {
@@ -52,18 +49,20 @@ class SearchViewModel : ViewModel() {
                 it.title.contains(query.trim(), ignoreCase = true)
             }
 
-            _searchState.value = if (filteredBooks.isEmpty()) {
-                SearchResultState.EmptySearch
-            } else {
-                SearchResultState.Content(filteredBooks)
-            }
+            updateSearchState(
+                newState = if (filteredBooks.isEmpty()) {
+                    SearchState.EmptySearch
+                } else {
+                    SearchState.Content(filteredBooks)
+                }
+            )
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            _searchState.value = SearchResultState.Error
+            updateSearchState(newState = SearchState.Error)
         }
     }
 
-    fun onSearchEvent(event: SearchEvent) {
+    fun onScreenEvent(event: SearchEvent) {
         when (event) {
             is SearchEvent.OnQueryChange -> onQueryChanged(event.newValue)
             is SearchEvent.OnExpandedChange -> onExpandedChange(event.newValue)
@@ -74,30 +73,42 @@ class SearchViewModel : ViewModel() {
     }
 
     private fun onQueryChanged(newValue: String) {
-        _query.value = newValue
+        updateQuery(newValue = newValue)
     }
 
     private fun onExpandedChange(newValue: Boolean) {
-        _isSearchExpanded.value = newValue
+        updateIsSearchExpanded(newValue = newValue)
     }
 
     private fun onSearch() {
-        if (query.value.isNotEmpty()) return
-        _isSearchExpanded.value = false
+        if (screenState.value.query.isNotEmpty()) return
+        updateIsSearchExpanded(newValue = false)
     }
 
     private fun onClearQueryClick() {
-        if (query.value.isNotEmpty()) {
-            _query.value = ""
+        if (screenState.value.query.isNotEmpty()) {
+            updateQuery(newValue = "")
         } else {
-            _isSearchExpanded.value = false
+            updateIsSearchExpanded(newValue = false)
         }
     }
 
     private fun onRetrySearchClick() {
         viewModelScope.launch {
-            search(_query.value)
+            search(screenState.value.query)
         }
+    }
+
+    private fun updateSearchState(newState: SearchState) {
+        _screenState.update { it.copy(searchState = newState) }
+    }
+
+    private fun updateQuery(newValue: String) {
+        _screenState.update { it.copy(query = newValue) }
+    }
+
+    private fun updateIsSearchExpanded(newValue: Boolean) {
+        _screenState.update { it.copy(isSearchExpanded = newValue) }
     }
 
     companion object {
