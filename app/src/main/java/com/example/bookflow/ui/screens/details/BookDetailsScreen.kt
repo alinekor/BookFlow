@@ -42,9 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookflow.R
-import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.presentation.details.BookDetailsViewModel
+import com.example.bookflow.presentation.search.getInitBookDetails
 import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
 import com.example.bookflow.ui.components.tags.OutlinedTag
 import com.example.bookflow.ui.components.tags.TagFlowRow
@@ -205,28 +205,4 @@ fun BookDetailsScreenPreview() {
             onNavAction = {},
         )
     }
-}
-
-fun getInitBookDetails(): BookDetails {
-    return BookDetails(
-        key = "OL27448W",
-        title = "The Fellowship of the Ring",
-        description = """
-        In ancient times the Rings of Power were crafted by the Elven-smiths,
-        and Sauron forged the One Ring to rule them all. Many years later,
-        the fate of Middle-earth rests in the hands of a young hobbit named Frodo.
-    """.trimIndent(),
-        authors = listOf("J. R. R. Tolkien"),
-        subjects = listOf(
-            "Fantasy",
-            "Adventure",
-            "Epic Fantasy",
-            "Middle-earth",
-            "Quest",
-            "Friendship",
-            "Magic"
-        ),
-        publishYear = 1954,
-        cover = BookCover(12345),
-    )
 }

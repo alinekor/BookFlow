@@ -38,10 +38,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
-import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.presentation.search.SearchEvent
 import com.example.bookflow.presentation.search.SearchScreenState
 import com.example.bookflow.presentation.search.SearchViewModel
+import com.example.bookflow.presentation.search.getInitBooks
 import com.example.bookflow.ui.components.books.BookListItem
 import com.example.bookflow.ui.components.paging.PagingLoadStateView
 import com.example.bookflow.ui.components.placehoders.StatusMessage
@@ -341,17 +341,5 @@ fun SearchScreenPreview() {
                 onNavAction = {},
             )
         }
-    }
-}
-
-fun getInitBooks(): List<Book> {
-    return List(10) { i ->
-        Book(
-            key = "OL27448W_$i",
-            title = "The Lord of the Rings $i",
-            authors = listOf("J. R. R. Tolkien"),
-            publishYear = 1954,
-            cover = BookCover(id = 8231856),
-        )
     }
 }
