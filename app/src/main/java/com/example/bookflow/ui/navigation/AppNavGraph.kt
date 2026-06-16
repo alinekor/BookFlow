@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.example.bookflow.ui.screens.details.BookDetailsNavAction
 import com.example.bookflow.ui.screens.details.BookDetailsScreen
 import com.example.bookflow.ui.screens.search.SearchNavAction
 import com.example.bookflow.ui.screens.search.SearchScreen
@@ -42,8 +43,10 @@ fun AppNavGraph(navController: NavHostController, paddingValues: PaddingValues) 
 
                 BookDetailsScreen(
                     bookKey = route.bookKey,
-                    onBackClick = {
-                        navController.popBackStack()
+                    onNavAction = { action ->
+                        when (action) {
+                            BookDetailsNavAction.NavigateBack -> navController.popBackStack()
+                        }
                     }
                 )
             }

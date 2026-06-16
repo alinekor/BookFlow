@@ -51,7 +51,7 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 @Composable
 fun BookDetailsScreen(
     bookKey: String,
-    onBackClick: () -> Unit,
+    onNavAction: (action: BookDetailsNavAction) -> Unit,
 ) {
     val bookDetails = remember(bookKey) {
         val stubBookDetails = getInitBookDetails()
@@ -72,7 +72,9 @@ fun BookDetailsScreen(
         contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             BackTopAppBar(
-                onBackClick = onBackClick,
+                onBackClick = {
+                    onNavAction(BookDetailsNavAction.NavigateBack)
+                },
                 highlighted = isScrolled,
             )
         },
@@ -185,7 +187,7 @@ fun BookDetailsScreenPreview() {
     BookFlowTheme {
         BookDetailsScreen(
             bookKey = "123",
-            onBackClick = {},
+            onNavAction = {},
         )
     }
 }
