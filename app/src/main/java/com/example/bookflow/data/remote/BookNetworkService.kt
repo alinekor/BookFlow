@@ -2,6 +2,8 @@ package com.example.bookflow.data.remote
 
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
+import com.example.bookflow.data.model.BookDetails
+import com.example.bookflow.data.remote.dto.BookDetailsNetworkDto
 import com.example.bookflow.data.remote.dto.BookNetworkDto
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -23,7 +25,7 @@ class BookNetworkService {
         .build()
 
     private val openLibraryRetrofit = Retrofit.Builder()
-        .baseUrl("https://openlibrary.org/")
+        .baseUrl("https://openlibrary.org")
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -39,12 +41,26 @@ class BookNetworkService {
         return response.books?.map { it.toDomain() }.orEmpty()
     }
 
+    suspend fun loadBookDetails(bookKey: String): BookDetails {
+        return openLibraryApi.loadBookDetails(bookKey).toDomain()
+    }
+
     private fun BookNetworkDto.toDomain(): Book = Book(
         key = this.key,
         title = this.title,
         authors = this.authors.orEmpty(),
         publishYear = this.publishYear,
         cover = coverId?.let(::BookCover),
+    )
+
+    private fun BookDetailsNetworkDto.toDomain(): BookDetails = BookDetails(
+        key = this.key,
+        title = this.title,
+        description = this.description?.value,
+        authors = this.authors.orEmpty(),
+        subjects = this.subjects.orEmpty(),
+        publishYear = this.publishYear,
+        cover = covers?.firstOrNull()?.let(::BookCover),
     )
 
     companion object {

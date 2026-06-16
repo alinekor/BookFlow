@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface OpenLibraryApi {
 
-    @GET("search.json")
+    @GET("/search.json")
     suspend fun searchBooks(
         @Query("q") query: String,
         @Query("page") page: Int,
@@ -16,8 +16,8 @@ interface OpenLibraryApi {
         @Query("fields") fields: String = "key,title,author_name,first_publish_year,cover_i",
     ): BookSearchResponseDto
 
-    @GET("works/{workId}.json")
-    suspend fun getBookDetails(
-        @Path("workId") workId: String,
+    @GET("{key}.json")
+    suspend fun loadBookDetails(
+        @Path("key") bookKey: String,
     ): BookDetailsNetworkDto
 }

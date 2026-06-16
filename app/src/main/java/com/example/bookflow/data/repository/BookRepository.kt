@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.bookflow.data.model.Book
+import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,10 @@ class BookRepository {
                 )
             }
         ).flow
+    }
+
+    suspend fun loadBookDetails(bookKey: String): BookDetails {
+        return bookNetworkService.loadBookDetails(bookKey)
     }
 
     companion object {
