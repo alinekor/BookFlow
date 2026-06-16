@@ -7,7 +7,9 @@ import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class BookRepository {
 
@@ -32,8 +34,8 @@ class BookRepository {
         ).flow
     }
 
-    suspend fun loadBookDetails(bookKey: String): BookDetails {
-        return bookNetworkService.loadBookDetails(bookKey)
+    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(Dispatchers.IO) {
+        bookNetworkService.loadBookDetails(bookKey)
     }
 
     companion object {

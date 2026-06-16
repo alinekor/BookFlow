@@ -1,7 +1,6 @@
 package com.example.bookflow.ui.screens.details
 
 import android.content.res.Configuration
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,23 +25,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.example.bookflow.R
 import com.example.bookflow.data.model.BookDetails
+import com.example.bookflow.presentation.details.BookDetailsEvent
+import com.example.bookflow.presentation.details.BookDetailsScreenState
 import com.example.bookflow.presentation.details.BookDetailsViewModel
 import com.example.bookflow.presentation.search.getInitBookDetails
 import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
@@ -57,26 +60,21 @@ fun BookDetailsScreen(
         factory = BookDetailsViewModel.Factory
     ),
 ) {
+    val screenState by viewModel.state.collectAsStateWithLifecycle()
+
     BookDetailsScreen(
-        bookKey = "123",
+        screenState = screenState,
+        onScreenEvent = viewModel::onScreenEvent,
         onNavAction = onNavAction,
     )
 }
 
 @Composable
 private fun BookDetailsScreen(
-    bookKey: String,
+    screenState: BookDetailsScreenState,
+    onScreenEvent: (event: BookDetailsEvent) -> Unit,
     onNavAction: (action: BookDetailsNavAction) -> Unit,
 ) {
-    val bookDetails = remember(bookKey) {
-        val stubBookDetails = getInitBookDetails()
-        stubBookDetails.copy(
-            key = bookKey,
-            title = "${stubBookDetails.title} - $bookKey"
-        )
-    }
-    var savedToLibrary by rememberSaveable { mutableStateOf(false) }
-
     val scrollState = rememberScrollState()
     val isScrolled by remember {
         derivedStateOf { scrollState.value > 0 }
@@ -94,17 +92,29 @@ private fun BookDetailsScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { savedToLibrary = !savedToLibrary }
-            ) {
-                Icon(
-                    imageVector = if (savedToLibrary) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                    contentDescription = null
-                )
+            if (screenState is BookDetailsScreenState.Content) {
+                FloatingActionButton(
+                    onClick = { onScreenEvent(BookDetailsEvent.OnSaveToLibraryClick) }
+                ) {
+                    val icon = if (screenState.savedToLibrary) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder
+                    Icon(imageVector = icon, contentDescription = null)
+                }
             }
         }
     ) { innerPadding ->
-        BookContent(innerPadding, bookDetails, scrollState)
+        when (screenState) {
+            BookDetailsScreenState.Initial -> {}
+
+            BookDetailsScreenState.Loading -> {} //TODO
+
+            BookDetailsScreenState.Error -> {} //TODO
+
+            is BookDetailsScreenState.Content -> BookContent(
+                innerPadding = innerPadding,
+                bookDetails = screenState.bookDetails,
+                scrollState = scrollState,
+            )
+        }
     }
 }
 
@@ -127,10 +137,15 @@ private fun BookContent(
             .padding(bottom = 108.dp, start = 12.dp, end = 12.dp)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        Image(
-            painter = painterResource(R.drawable.book_cover_test_large),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(bookDetails.cover?.largeUrl)
+                .crossfade(true)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            placeholder = painterResource(R.drawable.book_placeholder),
+            error = painterResource(R.drawable.book_placeholder),
             modifier = Modifier
                 .size(width = 160.dp, height = 240.dp)
                 .align(Alignment.CenterHorizontally)
@@ -198,10 +213,14 @@ private fun formatAuthors(authors: List<String>): String? {
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Night Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun BookDetailsScreenPreview() {
+fun BookDetailsContentStatePreview() {
     BookFlowTheme {
         BookDetailsScreen(
-            bookKey = "123",
+            screenState = BookDetailsScreenState.Content(
+                bookDetails = getInitBookDetails(),
+                savedToLibrary = true,
+            ),
+            onScreenEvent = {},
             onNavAction = {},
         )
     }
