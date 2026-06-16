@@ -40,9 +40,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookflow.R
 import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.data.model.BookDetails
+import com.example.bookflow.presentation.details.BookDetailsViewModel
 import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
 import com.example.bookflow.ui.components.tags.OutlinedTag
 import com.example.bookflow.ui.components.tags.TagFlowRow
@@ -50,6 +52,19 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun BookDetailsScreen(
+    onNavAction: (action: BookDetailsNavAction) -> Unit,
+    viewModel: BookDetailsViewModel = viewModel(
+        factory = BookDetailsViewModel.Factory
+    ),
+) {
+    BookDetailsScreen(
+        bookKey = "123",
+        onNavAction = onNavAction,
+    )
+}
+
+@Composable
+private fun BookDetailsScreen(
     bookKey: String,
     onNavAction: (action: BookDetailsNavAction) -> Unit,
 ) {
