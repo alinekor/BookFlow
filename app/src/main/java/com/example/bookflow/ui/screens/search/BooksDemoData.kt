@@ -1,4 +1,4 @@
-package com.example.bookflow.presentation.search
+package com.example.bookflow.ui.screens.search
 
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover

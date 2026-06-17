@@ -1,38 +1,37 @@
 package com.example.bookflow.presentation.search
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.extensions.isValidSearchQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 
 @OptIn(FlowPreview::class)
-class SearchViewModel : ViewModel() {
+class SearchViewModel : BaseViewModel() {
 
     private val repository = BookRepository()
 
-    private val _screenState = MutableStateFlow(SearchScreenState.INITIAL)
-    val screenState: StateFlow<SearchScreenState> = _screenState.asStateFlow()
+    private val query = MutableStateFlow(SearchScreenState.INITIAL.query)
+    private val isSearchExpanded = MutableStateFlow(SearchScreenState.INITIAL.isSearchExpanded)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val books: Flow<PagingData<Book>> =
-        screenState
+    private val booksPagingData: Flow<PagingData<Book>> =
+        query
             .debounce(QUERY_DEBOUNCE_MS)
-            .map { it.query }
             .distinctUntilChanged()
             .flatMapLatest { query ->
                 if (query.isValidSearchQuery()) {
@@ -42,6 +41,21 @@ class SearchViewModel : ViewModel() {
                 }
             }
             .cachedIn(viewModelScope)
+
+    val screenState: StateFlow<SearchScreenState> =
+        combine(query, isSearchExpanded) { query, isSearchExpanded ->
+            SearchScreenState(
+                query = query,
+                isSearchExpanded = isSearchExpanded,
+                booksPagingData = booksPagingData,
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS),
+            initialValue = SearchScreenState.INITIAL.copy(
+                booksPagingData = booksPagingData,
+            )
+        )
 
     fun onSearchEvent(event: SearchEvent) {
         when (event) {
@@ -53,38 +67,28 @@ class SearchViewModel : ViewModel() {
     }
 
     private fun onQueryChanged(newValue: String) {
-        _screenState.update {
-            it.copy(query = newValue)
-        }
+        query.value = newValue
     }
 
     private fun onExpandedChange(newValue: Boolean) {
-        _screenState.update {
-            it.copy(isSearchExpanded = newValue)
-        }
+        isSearchExpanded.value = newValue
     }
 
     private fun onSearch() {
         if (screenState.value.query.isNotEmpty()) return
-
-        _screenState.update {
-            it.copy(isSearchExpanded = false)
-        }
+        isSearchExpanded.value = false
     }
 
     private fun onClearQueryClick() {
         if (screenState.value.query.isNotEmpty()) {
-            _screenState.update {
-                it.copy(query = "")
-            }
+            query.value = ""
         } else {
-            _screenState.update {
-                it.copy(isSearchExpanded = false)
-            }
+            isSearchExpanded.value = false
         }
     }
 
     companion object {
         private const val QUERY_DEBOUNCE_MS = 500L
+        private const val SUBSCRIPTION_TIMEOUT_MS = 5000L
     }
 }

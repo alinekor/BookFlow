@@ -54,11 +54,11 @@ import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.presentation.details.BookDetailsEvent
 import com.example.bookflow.presentation.details.BookDetailsScreenState
 import com.example.bookflow.presentation.details.BookDetailsViewModel
-import com.example.bookflow.presentation.search.getInitBookDetails
 import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
 import com.example.bookflow.ui.components.placehoders.StatusMessage
 import com.example.bookflow.ui.components.tags.OutlinedTag
 import com.example.bookflow.ui.components.tags.TagFlowRow
+import com.example.bookflow.ui.screens.search.getInitBookDetails
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
