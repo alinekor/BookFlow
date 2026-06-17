@@ -1,8 +1,8 @@
 package com.example.bookflow.presentation.search
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookflow.data.model.Book
+import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.screens.search.getInitBooks
 import com.example.bookflow.ui.utils.imitateLoading
 import kotlinx.coroutines.Dispatchers
@@ -17,10 +17,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(FlowPreview::class)
-class SearchViewModel : ViewModel() {
+class SearchViewModel : BaseViewModel() {
 
     private val _screenState = MutableStateFlow(SearchScreenState.INITIAL)
     val screenState: StateFlow<SearchScreenState> = _screenState.asStateFlow()
@@ -28,12 +27,27 @@ class SearchViewModel : ViewModel() {
     private val initBooks: List<Book> = getInitBooks()
 
     init {
+        observeErrors()
+        observeQuery()
+    }
+
+    private fun observeErrors() {
+        viewModelScope.launch {
+            error.collect {
+                updateSearchState(newState = SearchState.Error)
+            }
+        }
+    }
+
+    private fun observeQuery() {
         viewModelScope.launch {
             screenState
                 .map { it.query }
                 .debounce(QUERY_DEBOUNCE_MS)
                 .distinctUntilChanged()
-                .collectLatest { query -> search(query) }
+                .collectLatest { query ->
+                    catchError { search(query) }
+                }
         }
     }
 
@@ -46,24 +60,19 @@ class SearchViewModel : ViewModel() {
         updateSearchState(newState = SearchState.Loading)
         imitateLoading()
 
-        try {
-            val filteredBooks = withContext(Dispatchers.Default) {
-                initBooks.filter {
-                    it.title.contains(query.trim(), ignoreCase = true)
-                }
+        val filteredBooks = withContext(Dispatchers.Default) {
+            initBooks.filter {
+                it.title.contains(query.trim(), ignoreCase = true)
             }
-
-            updateSearchState(
-                newState = if (filteredBooks.isEmpty()) {
-                    SearchState.EmptySearch
-                } else {
-                    SearchState.Content(filteredBooks)
-                }
-            )
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            updateSearchState(newState = SearchState.Error)
         }
+
+        updateSearchState(
+            newState = if (filteredBooks.isEmpty()) {
+                SearchState.EmptySearch
+            } else {
+                SearchState.Content(filteredBooks)
+            }
+        )
     }
 
     fun onScreenEvent(event: SearchEvent) {
@@ -98,7 +107,7 @@ class SearchViewModel : ViewModel() {
     }
 
     private fun onRetrySearchClick() {
-        viewModelScope.launch {
+        launchCatching {
             search(screenState.value.query)
         }
     }
