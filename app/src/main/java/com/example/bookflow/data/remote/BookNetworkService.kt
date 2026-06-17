@@ -47,7 +47,7 @@ class BookNetworkService {
         response.books?.map { it.toDomain() }.orEmpty()
     }
 
-    suspend fun loadBookDetails(bookKey: String): BookDetails {
+    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(Dispatchers.IO) {
         val bookDetailsDto = openLibraryApi.loadBookDetails(bookKey)
 
         val authorNames = bookDetailsDto.authors
@@ -56,7 +56,7 @@ class BookNetworkService {
             ?.map { author -> author.name }
             .orEmpty()
 
-        return bookDetailsDto.toDomain(authorNames = authorNames)
+        bookDetailsDto.toDomain(authorNames = authorNames)
     }
 
     private fun BookNetworkDto.toDomain(): Book = Book(

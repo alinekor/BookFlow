@@ -39,8 +39,8 @@ class BookRepository {
         ).flow
     }
 
-    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(Dispatchers.IO) {
-        bookNetworkService.loadBookDetails(bookKey)
+    suspend fun loadBookDetails(bookKey: String): BookDetails {
+        return bookNetworkService.loadBookDetails(bookKey)
     }
 
     fun observeSavedToLibrary(bookKey: String): Flow<Boolean> {
