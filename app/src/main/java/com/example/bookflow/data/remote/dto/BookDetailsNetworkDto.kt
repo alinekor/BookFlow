@@ -10,7 +10,7 @@ data class BookDetailsNetworkDto(
     @SerializedName("description")
     val description: DescriptionNetworkDto?,
     @SerializedName("authors")
-    val authors: List<AuthorDto>?,
+    val authors: List<AuthorNetworkDto>?,
     @SerializedName("subjects")
     val subjects: List<String>?,
     @SerializedName("first_publish_year")
@@ -20,5 +20,6 @@ data class BookDetailsNetworkDto(
 )
 
 data class DescriptionNetworkDto(
+    @SerializedName("value")
     val value: String?
 )
