@@ -63,7 +63,7 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun BookDetailsScreen(
-    onNavAction: (action: BookDetailsNavAction) -> Unit,
+    router: IBookDetailsRouter,
     viewModel: BookDetailsViewModel = viewModel(
         factory = BookDetailsViewModel.Factory
     ),
@@ -73,7 +73,7 @@ fun BookDetailsScreen(
     BookDetailsScreen(
         screenState = screenState,
         onScreenEvent = viewModel::onScreenEvent,
-        onNavAction = onNavAction,
+        router = router,
     )
 }
 
@@ -81,7 +81,7 @@ fun BookDetailsScreen(
 private fun BookDetailsScreen(
     screenState: BookDetailsScreenState,
     onScreenEvent: (event: BookDetailsEvent) -> Unit,
-    onNavAction: (action: BookDetailsNavAction) -> Unit,
+    router: IBookDetailsRouter,
 ) {
     val scrollState = rememberScrollState()
     val isScrolled by remember {
@@ -93,9 +93,7 @@ private fun BookDetailsScreen(
         contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             BackTopAppBar(
-                onBackClick = {
-                    onNavAction(BookDetailsNavAction.NavigateBack)
-                },
+                onBackClick = { router.navigateBack() },
                 highlighted = isScrolled,
             )
         },
@@ -280,7 +278,7 @@ fun BookLoadingStatePreview() {
         BookDetailsScreen(
             screenState = BookDetailsScreenState.Loading,
             onScreenEvent = {},
-            onNavAction = {},
+            router = PreviewBookDetailsRouter,
         )
     }
 }
@@ -296,7 +294,7 @@ fun BookContentStatePreview() {
                 savedToLibrary = true,
             ),
             onScreenEvent = {},
-            onNavAction = {},
+            router = PreviewBookDetailsRouter,
         )
     }
 }
@@ -309,7 +307,7 @@ fun BookErrorStatePreview() {
         BookDetailsScreen(
             screenState = BookDetailsScreenState.Error,
             onScreenEvent = {},
-            onNavAction = {},
+            router = PreviewBookDetailsRouter,
         )
     }
 }
