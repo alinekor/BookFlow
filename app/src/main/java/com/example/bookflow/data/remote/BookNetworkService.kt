@@ -3,6 +3,8 @@ package com.example.bookflow.data.remote
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.data.remote.dto.BookNetworkDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -30,13 +32,17 @@ class BookNetworkService {
 
     private val openLibraryApi = openLibraryRetrofit.create(OpenLibraryApi::class.java)
 
-    suspend fun searchBooks(query: String, nextPage: Int, limit: Int): List<Book> {
+    suspend fun searchBooks(
+        query: String,
+        nextPage: Int,
+        limit: Int
+    ): List<Book> = withContext(Dispatchers.IO) {
         val response = openLibraryApi.searchBooks(
             query = query,
             page = nextPage,
             limit = limit,
         )
-        return response.books?.map { it.toDomain() }.orEmpty()
+        response.books?.map { it.toDomain() }.orEmpty()
     }
 
     private fun BookNetworkDto.toDomain(): Book = Book(

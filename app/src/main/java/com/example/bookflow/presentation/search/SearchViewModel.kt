@@ -1,11 +1,11 @@
 package com.example.bookflow.presentation.search
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.extensions.isValidSearchQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(FlowPreview::class)
-class SearchViewModel : ViewModel() {
+class SearchViewModel : BaseViewModel() {
 
     private val repository = BookRepository()
 
