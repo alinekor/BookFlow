@@ -39,8 +39,6 @@ import androidx.paging.compose.itemKey
 import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.presentation.search.SearchEvent
-import com.example.bookflow.presentation.search.SearchScreenState
-import com.example.bookflow.presentation.search.SearchState
 import com.example.bookflow.presentation.search.SearchViewModel
 import com.example.bookflow.ui.components.books.BookListItem
 import com.example.bookflow.ui.components.paging.PagingLoadStateView
@@ -56,11 +54,12 @@ fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
-    val books = viewModel.books.collectAsLazyPagingItems()
+    val booksPagingItems = screenState.booksPagingData.collectAsLazyPagingItems()
 
     SearchScreen(
-        screenState = screenState,
-        books = books,
+        query = screenState.query,
+        isSearchExpanded = screenState.isSearchExpanded,
+        booksPagingItems = booksPagingItems,
         onSearchEvent = viewModel::onSearchEvent,
         router = router,
     )
@@ -68,19 +67,19 @@ fun SearchScreen(
 
 @Composable
 private fun SearchScreen(
-    screenState: SearchScreenState,
-    books: LazyPagingItems<Book>,
+    query: String,
+    isSearchExpanded: Boolean,
+    booksPagingItems: LazyPagingItems<Book>,
     onSearchEvent: (event: SearchEvent) -> Unit,
     router: ISearchRouter,
 ) {
     val focusManager = LocalFocusManager.current
 
-    val isSearchExpanded = screenState.isSearchExpanded
-    val booksRefreshLoadState = books.loadState.refresh
+    val booksRefreshLoadState = booksPagingItems.loadState.refresh
 
     Column(Modifier.fillMaxSize()) {
         AppSearchBar(
-            query = screenState.query,
+            query = query,
             onQueryChange = {
                 onSearchEvent(SearchEvent.OnQueryChange(it))
             },
@@ -99,7 +98,7 @@ private fun SearchScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             when {
-                !screenState.query.isValidSearchQuery() -> SearchEmptyState(
+                !query.isValidSearchQuery() -> SearchEmptyState(
                     titleRes = R.string.search_initial_state_title,
                     descriptionRes = R.string.search_initial_state_description,
                 )
@@ -107,19 +106,19 @@ private fun SearchScreen(
                 booksRefreshLoadState is LoadState.Loading -> SearchProgressState()
 
                 booksRefreshLoadState is LoadState.Error -> SearchErrorState(
-                    onRetryClick = { books.retry() }
+                    onRetryClick = { booksPagingItems.retry() }
                 )
 
-                booksRefreshLoadState is LoadState.NotLoading && books.itemCount == 0 -> SearchEmptyState(
+                booksRefreshLoadState is LoadState.NotLoading && booksPagingItems.itemCount == 0 -> SearchEmptyState(
                     titleRes = R.string.search_empty_state_title,
                     descriptionRes = R.string.search_empty_state_description,
                 )
 
                 booksRefreshLoadState is LoadState.NotLoading -> {
                     BooksList(
-                        books = books,
+                        booksPagingItems = booksPagingItems,
                         onBookClick = { router.openBookDetails(it) },
-                        onRetryClick = { books.retry() },
+                        onRetryClick = { booksPagingItems.retry() },
                     )
                 }
             }
@@ -189,7 +188,7 @@ private fun SearchProgressState() {
 
 @Composable
 fun BooksList(
-    books: LazyPagingItems<Book>,
+    booksPagingItems: LazyPagingItems<Book>,
     onBookClick: (key: String) -> Unit,
     onRetryClick: () -> Unit,
 ) {
@@ -197,10 +196,10 @@ fun BooksList(
 
     LazyColumn {
         items(
-            count = books.itemCount,
-            key = books.itemKey { it.key },
+            count = booksPagingItems.itemCount,
+            key = booksPagingItems.itemKey { it.key },
         ) { index ->
-            books[index]?.let { book ->
+            booksPagingItems[index]?.let { book ->
                 BookListItem(
                     item = book,
                     onBookClick = {
@@ -212,7 +211,7 @@ fun BooksList(
         }
         item {
             PagingLoadStateView(
-                loadState = books.loadState.append,
+                loadState = booksPagingItems.loadState.append,
                 onRetry = onRetryClick,
             )
         }
@@ -291,14 +290,14 @@ fun SearchProgressStatePreview() {
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun BooksListPreview() {
-    val books = flowOf(
+    val booksPagingItems = flowOf(
         PagingData.from(getInitBooks())
     ).collectAsLazyPagingItems()
 
     BookFlowTheme {
         Surface {
             BooksList(
-                books = books,
+                booksPagingItems = booksPagingItems,
                 onBookClick = {},
                 onRetryClick = {},
             )
@@ -323,19 +322,16 @@ fun SearchErrorStatePreview() {
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun SearchScreenPreview() {
-    val books = flowOf(
+    val booksPagingItems = flowOf(
         PagingData.from(emptyList<Book>())
     ).collectAsLazyPagingItems()
 
     BookFlowTheme {
         Surface {
             SearchScreen(
-                screenState = SearchScreenState(
-                    query = "",
-                    isSearchExpanded = false,
-                    searchState = SearchState.Initial,
-                ),
-                books = books,
+                query = "",
+                isSearchExpanded = false,
+                booksPagingItems = booksPagingItems,
                 onSearchEvent = {},
                 router = PreviewSearchRouter,
             )

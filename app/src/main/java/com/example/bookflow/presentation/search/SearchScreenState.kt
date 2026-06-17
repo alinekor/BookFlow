@@ -1,32 +1,20 @@
 package com.example.bookflow.presentation.search
 
+import androidx.paging.PagingData
 import com.example.bookflow.data.model.Book
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 data class SearchScreenState(
     val query: String,
     val isSearchExpanded: Boolean,
-    val searchState: SearchState,
+    val booksPagingData: Flow<PagingData<Book>>,
 ) {
     companion object {
         val INITIAL = SearchScreenState(
             query = "",
             isSearchExpanded = false,
-            searchState = SearchState.Initial,
+            booksPagingData = flowOf(PagingData.empty()),
         )
     }
-}
-
-sealed class SearchState {
-
-    data object Initial : SearchState()
-
-    data object Loading : SearchState()
-
-    data object EmptySearch : SearchState()
-
-    data class Content(
-        val books: List<Book>,
-    ) : SearchState()
-
-    data object Error : SearchState()
 }
