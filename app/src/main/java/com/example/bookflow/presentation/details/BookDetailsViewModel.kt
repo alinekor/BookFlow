@@ -1,7 +1,6 @@
 package com.example.bookflow.presentation.details
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -9,19 +8,18 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.navigation.AppDestination
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class BookDetailsViewModel(
     savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val repository = BookRepository()
     private val screenArgs = savedStateHandle.toRoute<AppDestination.BookDetails>()
@@ -60,14 +58,15 @@ class BookDetailsViewModel(
 
     private fun loadBookDetails() {
         loadBookJob?.cancel()
-        loadBookJob = viewModelScope.launch {
+        loadBookJob = launchCatching(
+            onError = { e ->
+                bookDetails.value = Result.failure(e)
+            }
+        ) {
             bookDetails.value = null
 
-            bookDetails.value = runCatching {
-                repository.loadBookDetails(
-                    bookKey = screenArgs.bookKey,
-                )
-            }
+            val details = repository.loadBookDetails(bookKey = screenArgs.bookKey)
+            bookDetails.value = Result.success(details)
         }
     }
 
@@ -82,15 +81,11 @@ class BookDetailsViewModel(
         val content = state.value as? BookDetailsScreenState.Content ?: return
         val book = content.bookDetails
 
-        viewModelScope.launch {
-            try {
-                if (content.savedToLibrary) {
-                    repository.removeBookFromLibrary(bookKey = book.key)
-                } else {
-                    repository.saveBookToLibrary(book = book)
-                }
-            } catch (e: Throwable) {
-                if (e is CancellationException) throw e
+        launchCatching {
+            if (content.savedToLibrary) {
+                repository.removeBookFromLibrary(bookKey = book.key)
+            } else {
+                repository.saveBookToLibrary(book = book)
             }
         }
     }
