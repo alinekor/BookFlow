@@ -38,9 +38,9 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
-import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.presentation.search.SearchEvent
 import com.example.bookflow.presentation.search.SearchScreenState
+import com.example.bookflow.presentation.search.SearchState
 import com.example.bookflow.presentation.search.SearchViewModel
 import com.example.bookflow.ui.components.books.BookListItem
 import com.example.bookflow.ui.components.paging.PagingLoadStateView
@@ -52,7 +52,7 @@ import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun SearchScreen(
-    onNavAction: (action: SearchNavAction) -> Unit,
+    router: ISearchRouter,
     viewModel: SearchViewModel = viewModel(),
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
@@ -62,7 +62,7 @@ fun SearchScreen(
         screenState = screenState,
         books = books,
         onSearchEvent = viewModel::onSearchEvent,
-        onNavAction = onNavAction,
+        router = router,
     )
 }
 
@@ -71,7 +71,7 @@ private fun SearchScreen(
     screenState: SearchScreenState,
     books: LazyPagingItems<Book>,
     onSearchEvent: (event: SearchEvent) -> Unit,
-    onNavAction: (action: SearchNavAction) -> Unit,
+    router: ISearchRouter,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -118,9 +118,7 @@ private fun SearchScreen(
                 booksRefreshLoadState is LoadState.NotLoading -> {
                     BooksList(
                         books = books,
-                        onBookClick = {
-                            onNavAction(SearchNavAction.OpenBookDetails(bookKey = it))
-                        },
+                        onBookClick = { router.openBookDetails(it) },
                         onRetryClick = { books.retry() },
                     )
                 }
@@ -334,24 +332,13 @@ fun SearchScreenPreview() {
             SearchScreen(
                 screenState = SearchScreenState(
                     query = "",
-                    isSearchExpanded = true,
+                    isSearchExpanded = false,
+                    searchState = SearchState.Initial,
                 ),
                 books = books,
                 onSearchEvent = {},
-                onNavAction = {},
+                router = PreviewSearchRouter,
             )
         }
-    }
-}
-
-fun getInitBooks(): List<Book> {
-    return List(10) { i ->
-        Book(
-            key = "OL27448W_$i",
-            title = "The Lord of the Rings $i",
-            authors = listOf("J. R. R. Tolkien"),
-            publishYear = 1954,
-            cover = BookCover(id = 8231856),
-        )
     }
 }
