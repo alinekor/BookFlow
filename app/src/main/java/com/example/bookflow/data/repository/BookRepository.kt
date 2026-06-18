@@ -36,15 +36,14 @@ class BookRepository(context: Context) {
     }
 
     suspend fun loadBookDetails(bookKey: String): BookDetails {
+        libraryDatasource.getBookByKey(bookKey)?.let { localSavedBook ->
+            return localSavedBook
+        }
         return bookNetworkService.loadBookDetails(bookKey)
     }
 
     fun observeLibraryBooks(): Flow<List<Book>> {
         return libraryDatasource.observeAllBooks()
-    }
-
-    suspend fun getLibraryBook(bookKey: String): BookDetails? {
-        return libraryDatasource.getBookByKey(bookKey)
     }
 
     fun observeSavedToLibrary(bookKey: String): Flow<Boolean> {
