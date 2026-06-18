@@ -1,6 +1,7 @@
 package com.example.bookflow.presentation.details
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -19,9 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 
 class BookDetailsViewModel(
     savedStateHandle: SavedStateHandle,
+    private val repository: BookRepository,
 ) : BaseViewModel() {
 
-    private val repository = BookRepository()
     private val screenArgs = savedStateHandle.toRoute<AppDestination.BookDetails>()
 
     private val bookDetails = MutableStateFlow<Result<BookDetails>?>(null)
@@ -83,7 +84,7 @@ class BookDetailsViewModel(
 
         launchCatching {
             if (content.savedToLibrary) {
-                repository.removeBookFromLibrary(bookKey = book.key)
+                repository.deleteBookFromLibrary(bookKey = book.key)
             } else {
                 repository.saveBookToLibrary(book = book)
             }
@@ -93,7 +94,13 @@ class BookDetailsViewModel(
     companion object {
         val Factory = viewModelFactory {
             initializer {
-                BookDetailsViewModel(createSavedStateHandle())
+                val application = checkNotNull(
+                    this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
+                )
+                BookDetailsViewModel(
+                    savedStateHandle = createSavedStateHandle(),
+                    repository = BookRepository(application.applicationContext),
+                )
             }
         }
     }

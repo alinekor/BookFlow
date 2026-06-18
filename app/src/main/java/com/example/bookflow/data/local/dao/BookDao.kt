@@ -16,7 +16,7 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE bookKey = :bookKey LIMIT 1")
     suspend fun getBookByKey(bookKey: String): BookDbEntity?
 
-    @Query("SELECT EXISTS (SELECT 1 FROM books WHERE bookKey = :bookKey)")
+    @Query("SELECT COUNT(*) > 0 FROM books WHERE bookKey = :bookKey")
     fun observeIsBookExist(bookKey: String): Flow<Boolean>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

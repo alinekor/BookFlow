@@ -1,24 +1,20 @@
 package com.example.bookflow.data.repository
 
+import android.content.Context
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.example.bookflow.data.local.LibraryDataSource
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
 
-class BookRepository {
-
-    private val tempSavedBooks = MutableStateFlow(emptyList<String>())
+class BookRepository(context: Context) {
 
     private val bookNetworkService = BookNetworkService()
+    private val libraryDatasource = LibraryDataSource(context)
 
     private val pagingConfig = PagingConfig(
         pageSize = SEARCH_BOOKS_PAGE_SIZE,
@@ -43,22 +39,24 @@ class BookRepository {
         return bookNetworkService.loadBookDetails(bookKey)
     }
 
+    fun observeLibraryBooks(): Flow<List<Book>> {
+        return libraryDatasource.observeAllBooks()
+    }
+
+    suspend fun getLibraryBook(bookKey: String): BookDetails? {
+        return libraryDatasource.getBookByKey(bookKey)
+    }
+
     fun observeSavedToLibrary(bookKey: String): Flow<Boolean> {
-        return tempSavedBooks.map { savedBooks ->
-            bookKey in savedBooks
-        }
+        return libraryDatasource.observeIsBookExist(bookKey)
     }
 
-    suspend fun saveBookToLibrary(book: BookDetails) = withContext(Dispatchers.IO) {
-        tempSavedBooks.update { savedBooks ->
-            savedBooks + book.key
-        }
+    suspend fun saveBookToLibrary(book: BookDetails) {
+        libraryDatasource.insertBook(book)
     }
 
-    suspend fun removeBookFromLibrary(bookKey: String) = withContext(Dispatchers.IO) {
-        tempSavedBooks.update { savedBooks ->
-            savedBooks - bookKey
-        }
+    suspend fun deleteBookFromLibrary(bookKey: String) {
+        libraryDatasource.deleteBook(bookKey)
     }
 
     companion object {

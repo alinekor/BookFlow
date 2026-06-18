@@ -1,6 +1,9 @@
 package com.example.bookflow.presentation.search
 
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.bookflow.data.model.Book
@@ -21,9 +24,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(FlowPreview::class)
-class SearchViewModel : BaseViewModel() {
-
-    private val repository = BookRepository()
+class SearchViewModel(
+    private val repository: BookRepository,
+) : BaseViewModel() {
 
     private val query = MutableStateFlow(SearchScreenState.INITIAL.query)
     private val isSearchExpanded = MutableStateFlow(SearchScreenState.INITIAL.isSearchExpanded)
@@ -90,5 +93,16 @@ class SearchViewModel : BaseViewModel() {
     companion object {
         private const val QUERY_DEBOUNCE_MS = 500L
         private const val SUBSCRIPTION_TIMEOUT_MS = 5000L
+
+        val Factory = viewModelFactory {
+            initializer {
+                val application = checkNotNull(
+                    this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
+                )
+                SearchViewModel(
+                    repository = BookRepository(application.applicationContext)
+                )
+            }
+        }
     }
 }

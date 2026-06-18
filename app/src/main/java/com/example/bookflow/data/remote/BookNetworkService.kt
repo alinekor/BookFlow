@@ -5,6 +5,7 @@ import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.remote.dto.BookDetailsNetworkDto
 import com.example.bookflow.data.remote.dto.BookNetworkDto
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -13,7 +14,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class BookNetworkService {
+class BookNetworkService(
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -38,7 +41,7 @@ class BookNetworkService {
         query: String,
         nextPage: Int,
         limit: Int
-    ): List<Book> = withContext(Dispatchers.IO) {
+    ): List<Book> = withContext(defaultDispatcher) {
         val response = openLibraryApi.searchBooks(
             query = query,
             page = nextPage,
@@ -47,7 +50,7 @@ class BookNetworkService {
         response.books?.map { it.toDomain() }.orEmpty()
     }
 
-    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(Dispatchers.IO) {
+    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(defaultDispatcher) {
         val bookDetailsDto = openLibraryApi.loadBookDetails(bookKey)
 
         val authorNames = bookDetailsDto.authors
