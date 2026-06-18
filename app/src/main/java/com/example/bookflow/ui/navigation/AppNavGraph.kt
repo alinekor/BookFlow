@@ -13,6 +13,7 @@ import com.example.bookflow.ui.screens.details.BookDetailsNavRouter
 import com.example.bookflow.ui.screens.details.BookDetailsScreen
 import com.example.bookflow.ui.screens.search.SearchNavRouter
 import com.example.bookflow.ui.screens.search.SearchScreen
+import com.example.bookflow.ui.screens.shelf.MyShelfNavRouter
 import com.example.bookflow.ui.screens.shelf.MyShelfScreen
 
 @Composable
@@ -41,7 +42,8 @@ fun AppNavGraph(navController: NavHostController, paddingValues: PaddingValues) 
             startDestination = AppDestination.MyShelf
         ) {
             composable<AppDestination.MyShelf> {
-                MyShelfScreen()
+                val router = MyShelfNavRouter(navController)
+                MyShelfScreen(router)
             }
         }
     }

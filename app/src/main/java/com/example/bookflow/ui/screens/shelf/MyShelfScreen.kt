@@ -1,36 +1,40 @@
 package com.example.bookflow.ui.screens.shelf
 
-import android.content.res.Configuration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.bookflow.ui.theme.BookFlowTheme
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bookflow.presentation.shelf.MyShelfScreenState
+import com.example.bookflow.presentation.shelf.MyShelfViewModel
 
 @Composable
-fun MyShelfScreen() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.LightGray),
-    ) {
-        Text("MyShelf")
-    }
+fun MyShelfScreen(
+    router: IMyShelfRouter,
+    viewModel: MyShelfViewModel = viewModel(
+        factory = MyShelfViewModel.Factory,
+    )
+) {
+    val screenState by viewModel.state.collectAsStateWithLifecycle()
+
+    MyShelfScreen(
+        screenState = screenState,
+        router = router,
+    )
 }
 
-@Preview(name = "Light Theme", showBackground = true)
-@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun MyShelfScreenPreview() {
-    BookFlowTheme {
-        MyShelfScreen()
-    }
+fun MyShelfScreen(
+    screenState: MyShelfScreenState,
+    router: IMyShelfRouter,
+) {
+
 }
+
+//@Preview(name = "Light Theme", showBackground = true)
+//@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+//@Composable
+//fun MyShelfScreenPreview() {
+//    BookFlowTheme {
+//        MyShelfScreen()
+//    }
+//}
