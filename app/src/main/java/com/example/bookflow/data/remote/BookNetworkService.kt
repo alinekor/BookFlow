@@ -73,7 +73,7 @@ class BookNetworkService(
     private fun BookDetailsNetworkDto.toDomain(authorNames: List<String>) = BookDetails(
         key = this.key,
         title = this.title,
-        description = this.description?.value,
+        description = this.description,
         authors = authorNames,
         subjects = this.subjects.orEmpty(),
         publishYear = this.publishYear,

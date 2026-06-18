@@ -1,5 +1,7 @@
 package com.example.bookflow.data.remote.dto
 
+import com.example.bookflow.data.remote.searializer.DescriptionDeserializer
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 
 data class BookDetailsNetworkDto(
@@ -8,7 +10,8 @@ data class BookDetailsNetworkDto(
     @SerializedName("title")
     val title: String,
     @SerializedName("description")
-    val description: DescriptionNetworkDto?,
+    @JsonAdapter(DescriptionDeserializer::class)
+    val description: String?,
     @SerializedName("authors")
     val authors: List<AuthorNetworkDto>?,
     @SerializedName("subjects")
@@ -17,9 +20,4 @@ data class BookDetailsNetworkDto(
     val publishYear: Int?,
     @SerializedName("covers")
     val covers: List<Int>?,
-)
-
-data class DescriptionNetworkDto(
-    @SerializedName("value")
-    val value: String?
 )
