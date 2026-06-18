@@ -32,7 +32,7 @@ fun AppNavGraph(navController: NavHostController, paddingValues: PaddingValues) 
                 val router = SearchNavRouter(navController)
                 SearchScreen(router)
             }
-            composable<AppDestination.BookDetails> { entry ->
+            composable<AppDestination.BookDetails> {
                 val router = BookDetailsNavRouter(navController)
                 BookDetailsScreen(router)
             }
@@ -44,6 +44,10 @@ fun AppNavGraph(navController: NavHostController, paddingValues: PaddingValues) 
             composable<AppDestination.MyShelf> {
                 val router = MyShelfNavRouter(navController)
                 MyShelfScreen(router)
+            }
+            composable<AppDestination.BookDetails> {
+                val router = BookDetailsNavRouter(navController)
+                BookDetailsScreen(router)
             }
         }
     }
