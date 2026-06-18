@@ -12,7 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -22,9 +23,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -35,11 +34,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookflow.R
+import com.example.bookflow.data.model.Book
 import com.example.bookflow.presentation.shelf.MyShelfEvent
 import com.example.bookflow.presentation.shelf.MyShelfScreenState
 import com.example.bookflow.presentation.shelf.MyShelfViewModel
+import com.example.bookflow.ui.components.books.BookListItem
 import com.example.bookflow.ui.components.nav_bar.TitleTopAppBar
 import com.example.bookflow.ui.components.placehoders.StatusMessage
+import com.example.bookflow.ui.screens.search.getInitBooks
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
@@ -64,18 +66,13 @@ fun MyShelfScreen(
     onScreenEvent: (event: MyShelfEvent) -> Unit,
     router: IMyShelfRouter,
 ) {
-    val scrollState = rememberScrollState()
-    val isScrolled by remember {
-        derivedStateOf { scrollState.value > 0 }
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             TitleTopAppBar(
                 title = stringResource(R.string.my_shelf_title),
-                highlighted = isScrolled,
+                highlighted = false,
             )
         },
     ) { innerPadding ->
@@ -93,7 +90,11 @@ fun MyShelfScreen(
                 onActionButtonClick = { router.openSearch() }
             )
 
-            is MyShelfScreenState.Content -> TODO()
+            is MyShelfScreenState.Content -> MyShelfContentState(
+                innerPadding = innerPadding,
+                books = screenState.books,
+                onBookClick = { router.openBookDetails(it) }
+            )
 
             MyShelfScreenState.Error -> InfoWithActionState(
                 innerPadding = innerPadding,
@@ -162,6 +163,26 @@ fun InfoWithActionState(
     }
 }
 
+@Composable
+private fun MyShelfContentState(
+    innerPadding: PaddingValues,
+    books: List<Book>,
+    onBookClick: (bookKey: String) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+    ) {
+        items(books, key = { it.key }) { book ->
+            BookListItem(
+                item = book,
+                onBookClick = { onBookClick(it) },
+            )
+        }
+    }
+}
+
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -195,6 +216,21 @@ fun MyShelfErrorStatePreview() {
     BookFlowTheme {
         MyShelfScreen(
             screenState = MyShelfScreenState.Error,
+            onScreenEvent = {},
+            router = PreviewMyShelfRouter,
+        )
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun MyShelfContentStatePreview() {
+    BookFlowTheme {
+        MyShelfScreen(
+            screenState = MyShelfScreenState.Content(
+                books = getInitBooks(),
+            ),
             onScreenEvent = {},
             router = PreviewMyShelfRouter,
         )
