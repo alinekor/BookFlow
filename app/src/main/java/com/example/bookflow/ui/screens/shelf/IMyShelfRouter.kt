@@ -5,6 +5,7 @@ import com.example.bookflow.ui.navigation.AppDestination
 
 interface IMyShelfRouter {
     fun openBookDetails(bookKey: String)
+    fun openSearch()
 }
 
 class MyShelfNavRouter(
@@ -16,5 +17,9 @@ class MyShelfNavRouter(
         navController.navigate(
             AppDestination.BookDetails(bookKey = bookKey)
         )
+    }
+
+    override fun openSearch() {
+        TODO("Not yet implemented")
     }
 }

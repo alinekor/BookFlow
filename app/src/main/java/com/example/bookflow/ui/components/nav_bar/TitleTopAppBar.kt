@@ -1,0 +1,50 @@
+package com.example.bookflow.ui.components.nav_bar
+
+import android.content.res.Configuration
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.bookflow.ui.theme.BookFlowTheme
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TitleTopAppBar(
+    modifier: Modifier = Modifier,
+    title: String,
+    highlighted: Boolean,
+) {
+    val containerColor by animateColorAsState(
+        targetValue = if (highlighted) {
+            MaterialTheme.colorScheme.surfaceContainer
+        } else {
+            MaterialTheme.colorScheme.surface
+        }
+    )
+
+    TopAppBar(
+        title = { Text(title) },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = containerColor
+        ),
+        modifier = modifier,
+    )
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Night Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun TitleTopAppBarPreview() {
+    BookFlowTheme {
+        TitleTopAppBar(
+            title = "Заголовок",
+            highlighted = false,
+        )
+    }
+}

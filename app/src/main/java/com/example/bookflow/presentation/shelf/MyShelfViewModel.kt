@@ -17,6 +17,10 @@ class MyShelfViewModel(
     private val _state = MutableStateFlow<MyShelfScreenState>(MyShelfScreenState.Initial)
     val state: StateFlow<MyShelfScreenState> = _state.asStateFlow()
 
+    fun onScreenEvent(event: MyShelfEvent) {
+
+    }
+
     companion object {
         val Factory = viewModelFactory {
             initializer {
