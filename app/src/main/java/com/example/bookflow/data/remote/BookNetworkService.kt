@@ -42,14 +42,14 @@ class BookNetworkService {
             page = nextPage,
             limit = limit,
         )
-        response.books?.map { it.toDomain() }.orEmpty()
+        response.docs?.map { it.toDomain() }.orEmpty()
     }
 
     private fun BookNetworkDto.toDomain(): Book = Book(
         key = this.key,
         title = this.title,
-        authors = this.authors.orEmpty(),
-        publishYear = this.publishYear,
+        authors = this.authorsName.orEmpty(),
+        publishYear = this.firstPublishYear,
         cover = coverId?.let(::BookCover),
     )
 
