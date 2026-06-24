@@ -18,5 +18,5 @@ sealed class AppDestination {
     data object MyShelf : AppDestination()
 
     @Serializable
-    data object BookDetails : AppDestination()
+    data class BookDetails(val bookKey: String) : AppDestination()
 }

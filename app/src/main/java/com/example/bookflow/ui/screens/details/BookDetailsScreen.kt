@@ -41,18 +41,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookflow.R
-import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.ui.components.BackTopAppBar
 import com.example.bookflow.ui.components.OutlinedTag
 import com.example.bookflow.ui.components.TagFlowRow
+import com.example.bookflow.ui.screens.search.getInitBookDetails
 import com.example.bookflow.ui.theme.BookFlowTheme
 
 @Composable
 fun BookDetailsScreen(
+    bookKey: String,
     onBackClick: () -> Unit,
 ) {
-    val bookDetails = getInitBookDetails()
+    val bookDetails = remember(bookKey) {
+        val stubBookDetails = getInitBookDetails()
+        stubBookDetails.copy(
+            key = bookKey,
+            title = "${stubBookDetails.title} - $bookKey"
+        )
+    }
     var savedToLibrary by rememberSaveable { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
@@ -90,7 +97,9 @@ private fun BookContent(
     bookDetails: BookDetails,
     scrollState: ScrollState,
 ) {
-    val authors = bookDetails.authors.takeIf { it.isNotEmpty() }?.joinToString(",")
+    val authors = remember(bookDetails.authors) {
+        formatAuthors(bookDetails.authors)
+    }
     val tags = bookDetails.subjects.takeIf { it.isNotEmpty() }
 
     Column(
@@ -165,37 +174,18 @@ private fun BookContent(
     }
 }
 
+private fun formatAuthors(authors: List<String>): String? {
+    return authors.takeIf { it.isNotEmpty() }?.joinToString(",")
+}
+
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Night Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun BookDetailsScreenPreview() {
     BookFlowTheme {
         BookDetailsScreen(
-            onBackClick = {}
+            bookKey = "123",
+            onBackClick = {},
         )
     }
-}
-
-fun getInitBookDetails(): BookDetails {
-    return BookDetails(
-        key = "OL27448W",
-        title = "The Fellowship of the Ring",
-        description = """
-        In ancient times the Rings of Power were crafted by the Elven-smiths,
-        and Sauron forged the One Ring to rule them all. Many years later,
-        the fate of Middle-earth rests in the hands of a young hobbit named Frodo.
-    """.trimIndent(),
-        authors = listOf("J. R. R. Tolkien"),
-        subjects = listOf(
-            "Fantasy",
-            "Adventure",
-            "Epic Fantasy",
-            "Middle-earth",
-            "Quest",
-            "Friendship",
-            "Magic"
-        ),
-        publishYear = 1954,
-        cover = BookCover(12345),
-    )
 }

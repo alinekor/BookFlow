@@ -67,7 +67,6 @@ fun AppSearchBar(
         modifier = modifier,
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
     ) {
-        //TODO: INIT, EMPTY, PROGRESS STATES
         searchContent()
     }
 }
