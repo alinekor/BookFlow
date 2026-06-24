@@ -1,9 +1,12 @@
 package com.example.bookflow.presentation.search
 
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.di.AppModule
 import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.extensions.isValidSearchQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,9 +24,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
 @OptIn(FlowPreview::class)
-class SearchViewModel : BaseViewModel() {
-
-    private val repository = BookRepository()
+class SearchViewModel(
+    private val repository: BookRepository,
+) : BaseViewModel() {
 
     private val _screenState = MutableStateFlow(SearchScreenState.INITIAL)
     val screenState: StateFlow<SearchScreenState> = _screenState.asStateFlow()
@@ -89,6 +92,12 @@ class SearchViewModel : BaseViewModel() {
     }
 
     companion object {
+        val Factory = viewModelFactory {
+            initializer {
+                SearchViewModel(repository = AppModule.bookRepository)
+            }
+        }
+
         private const val QUERY_DEBOUNCE_MS = 500L
     }
 }

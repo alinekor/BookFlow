@@ -8,9 +8,9 @@ import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
 import kotlinx.coroutines.flow.Flow
 
-class BookRepository {
-
-    private val bookNetworkService = BookNetworkService()
+class BookRepository(
+    private val bookNetworkService: BookNetworkService,
+) {
 
     private val pagingConfig = PagingConfig(
         pageSize = SEARCH_BOOKS_PAGE_SIZE,

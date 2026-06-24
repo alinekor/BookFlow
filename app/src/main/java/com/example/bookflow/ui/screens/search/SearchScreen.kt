@@ -51,7 +51,9 @@ import kotlinx.coroutines.flow.flowOf
 @Composable
 fun SearchScreen(
     router: ISearchRouter,
-    viewModel: SearchViewModel = viewModel(),
+    viewModel: SearchViewModel = viewModel(
+        factory = SearchViewModel.Factory
+    ),
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
     val booksPagingItems = screenState.booksPagingData.collectAsLazyPagingItems()
