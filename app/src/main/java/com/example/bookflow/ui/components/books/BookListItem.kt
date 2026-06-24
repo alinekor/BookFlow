@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -28,6 +27,7 @@ import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookCover
 import com.example.bookflow.ui.theme.BookFlowTheme
+import com.example.bookflow.ui.utils.formatAuthors
 
 @Composable
 fun BookListItem(
@@ -35,9 +35,7 @@ fun BookListItem(
     onBookClick: (key: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val authors = remember(item.authors) {
-        formatAuthors(item.authors)
-    }
+    val authors = formatAuthors(item.authors)
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -83,10 +81,6 @@ fun BookListItem(
             }
         }
     }
-}
-
-private fun formatAuthors(authors: List<String>): String? {
-    return authors.takeIf { it.isNotEmpty() }?.joinToString(", ")
 }
 
 @Preview(name = "Light Theme", showBackground = true)
