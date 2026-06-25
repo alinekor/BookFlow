@@ -28,7 +28,7 @@ class BookNetworkService(
         val bookDetailsDto = openLibraryApi.loadBookDetails(bookKey)
 
         val authorNames = bookDetailsDto.authors
-            ?.map { authorDto -> authorDto.authorKey.key }
+            ?.map { authorDto -> authorDto.author.key }
             ?.map { authorKey -> openLibraryApi.loadAuthor(authorKey) }
             ?.map { author -> author.name }
             .orEmpty()
