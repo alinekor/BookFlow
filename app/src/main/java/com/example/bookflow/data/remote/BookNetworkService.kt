@@ -24,7 +24,7 @@ class BookNetworkService(
         response.docs.orEmpty().map(BooksNetworkMapper::mapSearchItem)
     }
 
-    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(Dispatchers.IO) {
+    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(dispatcher) {
         val bookDetailsDto = openLibraryApi.loadBookDetails(bookKey)
 
         val authorNames = bookDetailsDto.authors
