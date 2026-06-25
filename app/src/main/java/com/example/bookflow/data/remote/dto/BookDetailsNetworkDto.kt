@@ -14,11 +14,12 @@ data class BookDetailsNetworkDto(
     @SerializedName("subjects")
     val subjects: List<String>?,
     @SerializedName("first_publish_year")
-    val publishYear: Int?,
+    val firstPublishYear: Int?,
     @SerializedName("covers")
     val covers: List<Int>?,
 )
 
 data class DescriptionNetworkDto(
+    @SerializedName("value")
     val value: String?
 )

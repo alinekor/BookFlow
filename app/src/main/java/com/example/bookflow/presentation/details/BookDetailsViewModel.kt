@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.di.AppModule
 import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.navigation.AppDestination
 import kotlinx.coroutines.Job
@@ -19,9 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 
 class BookDetailsViewModel(
     savedStateHandle: SavedStateHandle,
+    private val repository: BookRepository,
 ) : BaseViewModel() {
 
-    private val repository = BookRepository()
     private val screenArgs = savedStateHandle.toRoute<AppDestination.BookDetails>()
 
     private val bookDetails = MutableStateFlow<Result<BookDetails>?>(null)
@@ -93,7 +94,10 @@ class BookDetailsViewModel(
     companion object {
         val Factory = viewModelFactory {
             initializer {
-                BookDetailsViewModel(createSavedStateHandle())
+                BookDetailsViewModel(
+                    savedStateHandle = createSavedStateHandle(),
+                    repository = AppModule.bookRepository,
+                )
             }
         }
     }

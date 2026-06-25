@@ -14,11 +14,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
-class BookRepository {
-
+class BookRepository(
+    private val bookNetworkService: BookNetworkService,
+) {
     private val tempSavedBooks = MutableStateFlow(emptyList<String>())
-
-    private val bookNetworkService = BookNetworkService()
 
     private val pagingConfig = PagingConfig(
         pageSize = SEARCH_BOOKS_PAGE_SIZE,
