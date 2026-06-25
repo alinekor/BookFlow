@@ -69,7 +69,7 @@ fun BookDetailsScreen(
         factory = BookDetailsViewModel.Factory
     ),
 ) {
-    val screenState by viewModel.state.collectAsStateWithLifecycle()
+    val screenState by viewModel.screenState.collectAsStateWithLifecycle()
 
     BookDetailsScreen(
         screenState = screenState,
