@@ -1,5 +1,6 @@
 package com.example.bookflow.presentation.shelf
 
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bookflow.data.repository.BookRepository
@@ -10,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 
 class MyShelfViewModel(
@@ -27,18 +30,17 @@ class MyShelfViewModel(
 
     private fun observeSavedBooks() {
         observeBooksJob?.cancel()
-        observeBooksJob = launchCatching {
-            repository.observeLibraryBooks()
-                .onStart { _state.value = MyShelfScreenState.Loading }
-                .catch { _state.value = MyShelfScreenState.Error }
-                .collect { books ->
-                    _state.value = if (books.isEmpty()) {
-                        MyShelfScreenState.Empty
-                    } else {
-                        MyShelfScreenState.Content(books)
-                    }
+        observeBooksJob = repository.observeLibraryBooks()
+            .onStart { _state.value = MyShelfScreenState.Loading }
+            .onEach { books ->
+                _state.value = if (books.isEmpty()) {
+                    MyShelfScreenState.Empty
+                } else {
+                    MyShelfScreenState.Content(books)
                 }
-        }
+            }
+            .catch { _state.value = MyShelfScreenState.Error }
+            .launchIn(viewModelScope)
     }
 
     fun onScreenEvent(event: MyShelfEvent) {
