@@ -1,6 +1,5 @@
 package com.example.bookflow.data.repository
 
-import android.content.Context
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -11,10 +10,10 @@ import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
 import kotlinx.coroutines.flow.Flow
 
-class BookRepository(context: Context) {
-
-    private val bookNetworkService = BookNetworkService()
-    private val libraryDatasource = LibraryDataSource(context)
+class BookRepository(
+    private val bookNetworkService: BookNetworkService,
+    private val libraryDatasource: LibraryDataSource,
+) {
 
     private val pagingConfig = PagingConfig(
         pageSize = SEARCH_BOOKS_PAGE_SIZE,

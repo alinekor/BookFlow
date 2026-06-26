@@ -8,9 +8,9 @@ data class BookNetworkDto(
     @SerializedName("title")
     val title: String,
     @SerializedName("author_name")
-    val authors: List<String>?,
+    val authorsName: List<String>?,
     @SerializedName("first_publish_year")
-    val publishYear: Int?,
+    val firstPublishYear: Int?,
     @SerializedName("cover_i")
     val coverId: Int?,
 )

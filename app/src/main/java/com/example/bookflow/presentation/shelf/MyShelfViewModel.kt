@@ -1,9 +1,9 @@
 package com.example.bookflow.presentation.shelf
 
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.di.AppModule
 import com.example.bookflow.presentation.base.BaseViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,11 +50,8 @@ class MyShelfViewModel(
     companion object {
         val Factory = viewModelFactory {
             initializer {
-                val application = checkNotNull(
-                    this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
-                )
                 MyShelfViewModel(
-                    repository = BookRepository(application.applicationContext)
+                    repository = AppModule.bookRepository
                 )
             }
         }

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class AuthorNetworkDto(
     @SerializedName("author")
-    val authorKey: AuthorKeyNetworkDto,
+    val author: AuthorKeyNetworkDto,
 )
 
 data class AuthorKeyNetworkDto(

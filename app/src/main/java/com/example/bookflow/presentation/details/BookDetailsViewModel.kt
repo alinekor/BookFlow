@@ -7,16 +7,18 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
-import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.di.AppModule
 import com.example.bookflow.presentation.base.BaseViewModel
 import com.example.bookflow.ui.navigation.AppDestination
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 
 class BookDetailsViewModel(
     savedStateHandle: SavedStateHandle,
@@ -25,50 +27,48 @@ class BookDetailsViewModel(
 
     private val screenArgs = savedStateHandle.toRoute<AppDestination.BookDetails>()
 
-    private val bookDetails = MutableStateFlow<Result<BookDetails>?>(null)
-
-    val state: StateFlow<BookDetailsScreenState> =
-        combine(
-            bookDetails,
-            repository.observeSavedToLibrary(
-                bookKey = screenArgs.bookKey
-            ),
-        ) { bookDetailsResult, savedToLibrary ->
-            when {
-                bookDetailsResult == null -> BookDetailsScreenState.Loading
-
-                bookDetailsResult.isFailure -> BookDetailsScreenState.Error
-
-                else -> BookDetailsScreenState.Content(
-                    bookDetails = bookDetailsResult.getOrThrow(),
-                    savedToLibrary = savedToLibrary,
-                )
-            }
-        }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = BookDetailsScreenState.Initial,
-            )
+    private val _screenState = MutableStateFlow<BookDetailsScreenState>(BookDetailsScreenState.Initial)
+    val screenState: StateFlow<BookDetailsScreenState> = _screenState.asStateFlow()
 
     private var loadBookJob: Job? = null
 
     init {
         loadBookDetails()
+        observeSavedToLibrary()
     }
 
     private fun loadBookDetails() {
         loadBookJob?.cancel()
         loadBookJob = launchCatching(
-            onError = { e ->
-                bookDetails.value = Result.failure(e)
+            onError = {
+                _screenState.value = BookDetailsScreenState.Error
             }
         ) {
-            bookDetails.value = null
+            _screenState.value = BookDetailsScreenState.Loading
 
-            val details = repository.loadBookDetails(bookKey = screenArgs.bookKey)
-            bookDetails.value = Result.success(details)
+            val bookKey = screenArgs.bookKey
+            val details = repository.loadBookDetails(bookKey)
+            val savedToLibrary = repository.observeSavedToLibrary(bookKey).first()
+
+            _screenState.value = BookDetailsScreenState.Content(
+                bookDetails = details,
+                savedToLibrary = savedToLibrary,
+            )
         }
+    }
+
+    private fun observeSavedToLibrary() {
+        repository.observeSavedToLibrary(screenArgs.bookKey)
+            .onEach { savedToLibrary ->
+                _screenState.update { currentState ->
+                    if (currentState is BookDetailsScreenState.Content) {
+                        currentState.copy(savedToLibrary = savedToLibrary)
+                    } else {
+                        currentState
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onScreenEvent(event: BookDetailsEvent) {
@@ -79,7 +79,7 @@ class BookDetailsViewModel(
     }
 
     private fun onSaveToLibraryClick() {
-        val content = state.value as? BookDetailsScreenState.Content ?: return
+        val content = screenState.value as? BookDetailsScreenState.Content ?: return
         val book = content.bookDetails
 
         launchCatching {
@@ -94,12 +94,9 @@ class BookDetailsViewModel(
     companion object {
         val Factory = viewModelFactory {
             initializer {
-                val application = checkNotNull(
-                    this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
-                )
                 BookDetailsViewModel(
                     savedStateHandle = createSavedStateHandle(),
-                    repository = BookRepository(application.applicationContext),
+                    repository = AppModule.bookRepository,
                 )
             }
         }

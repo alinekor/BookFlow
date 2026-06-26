@@ -52,7 +52,7 @@ import kotlinx.coroutines.flow.flowOf
 fun SearchScreen(
     router: ISearchRouter,
     viewModel: SearchViewModel = viewModel(
-        factory = SearchViewModel.Factory,
+        factory = SearchViewModel.Factory
     ),
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()

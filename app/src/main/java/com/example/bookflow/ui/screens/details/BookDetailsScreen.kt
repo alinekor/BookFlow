@@ -60,6 +60,7 @@ import com.example.bookflow.ui.components.tags.OutlinedTag
 import com.example.bookflow.ui.components.tags.TagFlowRow
 import com.example.bookflow.ui.screens.search.getInitBookDetails
 import com.example.bookflow.ui.theme.BookFlowTheme
+import com.example.bookflow.ui.utils.formatAuthors
 
 @Composable
 fun BookDetailsScreen(
@@ -68,7 +69,7 @@ fun BookDetailsScreen(
         factory = BookDetailsViewModel.Factory
     ),
 ) {
-    val screenState by viewModel.state.collectAsStateWithLifecycle()
+    val screenState by viewModel.screenState.collectAsStateWithLifecycle()
 
     BookDetailsScreen(
         screenState = screenState,
@@ -146,9 +147,7 @@ private fun BookContent(
     bookDetails: BookDetails,
     scrollState: ScrollState,
 ) {
-    val authors = remember(bookDetails.authors) {
-        formatAuthors(bookDetails.authors)
-    }
+    val authors = formatAuthors(bookDetails.authors)
     val tags = bookDetails.subjects.takeIf { it.isNotEmpty() }
 
     Column(
@@ -264,10 +263,6 @@ fun BookErrorState(
             )
         }
     }
-}
-
-private fun formatAuthors(authors: List<String>): String? {
-    return authors.takeIf { it.isNotEmpty() }?.joinToString(", ")
 }
 
 @Preview(name = "Light Theme", showBackground = true)
