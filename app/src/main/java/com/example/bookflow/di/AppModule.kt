@@ -7,10 +7,8 @@ import com.example.bookflow.data.repository.BookRepository
 
 object AppModule {
 
-    private lateinit var applicationContext: Context
-
     fun init(context: Context) {
-        applicationContext = context.applicationContext
+        DatabaseModule.init(context)
     }
 
     private val bookNetworkService: BookNetworkService by lazy {
@@ -18,7 +16,7 @@ object AppModule {
     }
 
     private val libraryDataSource: LibraryDataSource by lazy {
-        LibraryDataSource(context = applicationContext)
+        LibraryDataSource(bookDao = DatabaseModule.bookDao)
     }
 
     val bookRepository: BookRepository by lazy {

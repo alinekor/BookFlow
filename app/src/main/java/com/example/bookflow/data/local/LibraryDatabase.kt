@@ -21,17 +21,12 @@ abstract class LibraryDatabase : RoomDatabase() {
     companion object {
         private const val DATABASE_NAME = "library_database"
 
-        @Volatile
-        private var INSTANCE: LibraryDatabase? = null
-
-        fun getInstance(context: Context): LibraryDatabase {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    LibraryDatabase::class.java,
-                    DATABASE_NAME
-                ).build().also { INSTANCE = it }
-            }
+        fun create(context: Context): LibraryDatabase {
+            return Room.databaseBuilder(
+                context.applicationContext,
+                LibraryDatabase::class.java,
+                DATABASE_NAME,
+            ).build()
         }
     }
 }

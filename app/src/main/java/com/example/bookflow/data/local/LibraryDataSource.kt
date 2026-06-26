@@ -1,6 +1,5 @@
 package com.example.bookflow.data.local
 
-import android.content.Context
 import com.example.bookflow.data.local.dao.BookDao
 import com.example.bookflow.data.local.mapper.BooksDbMapper
 import com.example.bookflow.data.model.Book
@@ -13,11 +12,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class LibraryDataSource(
-    context: Context,
+    private val bookDao: BookDao,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
-    private val libraryDatabase = LibraryDatabase.getInstance(context)
-    private val bookDao: BookDao = libraryDatabase.bookDao()
 
     fun observeAllBooks(): Flow<List<Book>> {
         return bookDao.observeAllBooks()

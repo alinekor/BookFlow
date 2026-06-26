@@ -10,7 +10,9 @@ import com.example.bookflow.ui.theme.BookFlowTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         AppModule.init(applicationContext)
+
         enableEdgeToEdge()
         setContent {
             BookFlowTheme { BookFlowApp() }
