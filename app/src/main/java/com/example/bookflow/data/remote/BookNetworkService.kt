@@ -21,7 +21,7 @@ class BookNetworkService(
             page = nextPage,
             limit = limit,
         )
-        response.docs.orEmpty().map(BooksNetworkMapper::mapSearchItem)
+        response.docs.orEmpty().map(BooksNetworkMapper::mapToBook)
     }
 
     suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(dispatcher) {
@@ -33,7 +33,7 @@ class BookNetworkService(
             ?.map { author -> author.name }
             .orEmpty()
 
-        BooksNetworkMapper.mapBookDetails(
+        BooksNetworkMapper.mapToBookDetails(
             dto = bookDetailsDto,
             authorNames = authorNames,
         )

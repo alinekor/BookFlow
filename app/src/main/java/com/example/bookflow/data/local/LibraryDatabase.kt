@@ -15,6 +15,7 @@ import com.example.bookflow.data.local.entity.BookDbEntity
 )
 @TypeConverters(DbTypeConverters::class)
 abstract class LibraryDatabase : RoomDatabase() {
+
     abstract fun bookDao(): BookDao
 
     companion object {

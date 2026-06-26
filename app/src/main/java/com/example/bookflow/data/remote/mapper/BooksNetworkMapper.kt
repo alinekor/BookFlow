@@ -8,7 +8,7 @@ import com.example.bookflow.data.remote.dto.BookNetworkDto
 
 object BooksNetworkMapper {
 
-    fun mapSearchItem(dto: BookNetworkDto): Book = Book(
+    fun mapToBook(dto: BookNetworkDto): Book = Book(
         key = dto.key,
         title = dto.title,
         authors = dto.authorsName.orEmpty(),
@@ -16,7 +16,7 @@ object BooksNetworkMapper {
         cover = dto.coverId?.let(::BookCover),
     )
 
-    fun mapBookDetails(dto: BookDetailsNetworkDto, authorNames: List<String>) = BookDetails(
+    fun mapToBookDetails(dto: BookDetailsNetworkDto, authorNames: List<String>) = BookDetails(
         key = dto.key,
         title = dto.title,
         description = dto.description,
