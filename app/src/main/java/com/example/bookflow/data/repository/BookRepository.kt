@@ -14,7 +14,6 @@ class BookRepository(
     private val bookNetworkService: BookNetworkService,
     private val libraryDatasource: LibraryDataSource,
 ) {
-
     private val pagingConfig = PagingConfig(
         pageSize = SEARCH_BOOKS_PAGE_SIZE,
         initialLoadSize = SEARCH_BOOKS_PAGE_SIZE,
