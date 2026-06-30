@@ -42,11 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookflow.R
 import com.example.bookflow.data.model.BookDetails
-import com.example.bookflow.ui.components.BackTopAppBar
-import com.example.bookflow.ui.components.OutlinedTag
-import com.example.bookflow.ui.components.TagFlowRow
+import com.example.bookflow.ui.components.nav_bar.BackTopAppBar
+import com.example.bookflow.ui.components.tags.OutlinedTag
+import com.example.bookflow.ui.components.tags.TagFlowRow
 import com.example.bookflow.ui.screens.search.getInitBookDetails
 import com.example.bookflow.ui.theme.BookFlowTheme
+import com.example.bookflow.ui.utils.formatAuthors
 
 @Composable
 fun BookDetailsScreen(
@@ -97,9 +98,7 @@ private fun BookContent(
     bookDetails: BookDetails,
     scrollState: ScrollState,
 ) {
-    val authors = remember(bookDetails.authors) {
-        formatAuthors(bookDetails.authors)
-    }
+    val authors = formatAuthors(bookDetails.authors)
     val tags = bookDetails.subjects.takeIf { it.isNotEmpty() }
 
     Column(
@@ -172,10 +171,6 @@ private fun BookContent(
             )
         }
     }
-}
-
-private fun formatAuthors(authors: List<String>): String? {
-    return authors.takeIf { it.isNotEmpty() }?.joinToString(",")
 }
 
 @Preview(name = "Light Theme", showBackground = true)

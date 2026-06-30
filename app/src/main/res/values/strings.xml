@@ -8,7 +8,9 @@
     <string name="search_empty_state_description">We could not find any books matching your search</string>
     <string name="search_error_state_title">Something went wrong</string>
     <string name="search_error_state_description">Something went wrong while searching. Try again.</string>
-    <string name="search_error_retry_button">Retry</string>
+
+    <string name="page_loading_error_text">Page loading error</string>
+    <string name="retry_button">Retry</string>
 
     <string name="bottom_nav_destination_search">Search</string>
     <string name="bottom_nav_destination_my_shelf">My shelf</string>

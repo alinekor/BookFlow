@@ -4,7 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Search
 import com.example.bookflow.R
-import com.example.bookflow.ui.components.NavBarItem
+import com.example.bookflow.ui.components.nav_bar.NavBarItem
 import com.example.bookflow.ui.navigation.GraphRoute
 
 fun getAvailableBottomBarItems(): List<NavBarItem> {

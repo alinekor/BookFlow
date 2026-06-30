@@ -16,7 +16,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.bookflow.ui.components.AppBottomBar
+import com.example.bookflow.ui.components.nav_bar.AppBottomBar
 import com.example.bookflow.ui.extensions.getAvailableBottomBarItems
 import com.example.bookflow.ui.extensions.isInHierarchy
 import com.example.bookflow.ui.navigation.AppNavGraph

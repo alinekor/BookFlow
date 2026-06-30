@@ -9,6 +9,4 @@ sealed class SearchEvent {
     data object OnSearchClick : SearchEvent()
 
     data object OnClearQueryClick : SearchEvent()
-
-    data object OnRetrySearch : SearchEvent()
 }

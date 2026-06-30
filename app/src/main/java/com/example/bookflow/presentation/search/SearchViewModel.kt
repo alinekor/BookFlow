@@ -1,130 +1,103 @@
 package com.example.bookflow.presentation.search
 
 import androidx.lifecycle.viewModelScope
-import com.example.bookflow.data.model.Book
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.example.bookflow.data.repository.BookRepository
+import com.example.bookflow.di.AppModule
 import com.example.bookflow.presentation.base.BaseViewModel
-import com.example.bookflow.ui.screens.search.getInitBooks
-import com.example.bookflow.ui.utils.imitateLoading
-import kotlinx.coroutines.Dispatchers
+import com.example.bookflow.ui.extensions.isValidSearchQuery
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(FlowPreview::class)
-class SearchViewModel : BaseViewModel() {
+class SearchViewModel(
+    private val repository: BookRepository,
+) : BaseViewModel() {
 
     private val _screenState = MutableStateFlow(SearchScreenState.INITIAL)
     val screenState: StateFlow<SearchScreenState> = _screenState.asStateFlow()
 
-    private val initBooks: List<Book> = getInitBooks()
-
     init {
-        observeErrors()
-        observeQuery()
+        observeSearch()
     }
 
-    private fun observeErrors() {
-        viewModelScope.launch {
-            error.collect {
-                updateSearchState(newState = SearchState.Error)
-            }
-        }
-    }
-
-    private fun observeQuery() {
-        viewModelScope.launch {
-            screenState
-                .map { it.query }
-                .debounce(QUERY_DEBOUNCE_MS)
-                .distinctUntilChanged()
-                .collectLatest { query ->
-                    catchError { search(query) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeSearch() {
+        screenState
+            .map { it.query.trim() }
+            .debounce(QUERY_DEBOUNCE_MS)
+            .distinctUntilChanged()
+            .flatMapLatest { query ->
+                if (query.isValidSearchQuery()) {
+                    repository.searchBooks(query = query)
+                } else {
+                    flowOf(PagingData.empty())
                 }
-        }
+            }
+            .cachedIn(viewModelScope)
+            .onEach { pagingData ->
+                _screenState.update {
+                    it.copy(booksPagingData = flowOf(pagingData))
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
-    private suspend fun search(query: String) {
-        if (query.isBlank()) {
-            updateSearchState(newState = SearchState.Initial)
-            return
-        }
-
-        updateSearchState(newState = SearchState.Loading)
-        imitateLoading()
-
-        val filteredBooks = withContext(Dispatchers.Default) {
-            initBooks.filter {
-                it.title.contains(query.trim(), ignoreCase = true)
-            }
-        }
-
-        updateSearchState(
-            newState = if (filteredBooks.isEmpty()) {
-                SearchState.EmptySearch
-            } else {
-                SearchState.Content(filteredBooks)
-            }
-        )
-    }
-
-    fun onScreenEvent(event: SearchEvent) {
+    fun onSearchEvent(event: SearchEvent) {
         when (event) {
-            is SearchEvent.OnQueryChange -> onQueryChanged(event.newValue)
-            is SearchEvent.OnExpandedChange -> onExpandedChange(event.newValue)
+            is SearchEvent.OnQueryChange -> updateQuery(event.newValue)
+            is SearchEvent.OnExpandedChange -> updateSearchExpanded(event.newValue)
             SearchEvent.OnSearchClick -> onSearch()
             SearchEvent.OnClearQueryClick -> onClearQueryClick()
-            SearchEvent.OnRetrySearch -> onRetrySearchClick()
         }
-    }
-
-    private fun onQueryChanged(newValue: String) {
-        updateQuery(newValue = newValue)
-    }
-
-    private fun onExpandedChange(newValue: Boolean) {
-        updateIsSearchExpanded(newValue = newValue)
     }
 
     private fun onSearch() {
         if (screenState.value.query.isNotEmpty()) return
-        updateIsSearchExpanded(newValue = false)
+        updateSearchExpanded(newValue = false)
     }
 
     private fun onClearQueryClick() {
         if (screenState.value.query.isNotEmpty()) {
             updateQuery(newValue = "")
         } else {
-            updateIsSearchExpanded(newValue = false)
+            updateSearchExpanded(newValue = false)
         }
-    }
-
-    private fun onRetrySearchClick() {
-        launchCatching {
-            search(screenState.value.query)
-        }
-    }
-
-    private fun updateSearchState(newState: SearchState) {
-        _screenState.update { it.copy(searchState = newState) }
     }
 
     private fun updateQuery(newValue: String) {
-        _screenState.update { it.copy(query = newValue) }
+        _screenState.update {
+            it.copy(query = newValue)
+        }
     }
 
-    private fun updateIsSearchExpanded(newValue: Boolean) {
-        _screenState.update { it.copy(isSearchExpanded = newValue) }
+    private fun updateSearchExpanded(newValue: Boolean) {
+        _screenState.update {
+            it.copy(isSearchExpanded = newValue)
+        }
     }
 
     companion object {
-        private const val QUERY_DEBOUNCE_MS = 300L
+        val Factory = viewModelFactory {
+            initializer {
+                SearchViewModel(repository = AppModule.bookRepository)
+            }
+        }
+
+        private const val QUERY_DEBOUNCE_MS = 500L
     }
 }

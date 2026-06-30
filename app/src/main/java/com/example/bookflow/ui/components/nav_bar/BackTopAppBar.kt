@@ -1,4 +1,4 @@
-package com.example.bookflow.ui.components
+package com.example.bookflow.ui.components.nav_bar
 
 import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
@@ -32,28 +31,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.example.bookflow.R
 import com.example.bookflow.data.model.Book
 import com.example.bookflow.presentation.search.SearchEvent
-import com.example.bookflow.presentation.search.SearchState
 import com.example.bookflow.presentation.search.SearchViewModel
-import com.example.bookflow.ui.components.AppSearchBar
-import com.example.bookflow.ui.components.BookListItem
-import com.example.bookflow.ui.components.StatusMessage
+import com.example.bookflow.ui.components.books.BookListItem
+import com.example.bookflow.ui.components.paging.PagingLoadStateView
+import com.example.bookflow.ui.components.placehoders.StatusMessage
+import com.example.bookflow.ui.components.search.AppSearchBar
+import com.example.bookflow.ui.extensions.isValidSearchQuery
 import com.example.bookflow.ui.theme.BookFlowTheme
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun SearchScreen(
     router: ISearchRouter,
-    viewModel: SearchViewModel = viewModel(),
+    viewModel: SearchViewModel = viewModel(
+        factory = SearchViewModel.Factory
+    ),
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
+    val booksPagingItems = screenState.booksPagingData.collectAsLazyPagingItems()
 
     SearchScreen(
         query = screenState.query,
         isSearchExpanded = screenState.isSearchExpanded,
-        searchState = screenState.searchState,
-        onScreenEvent = viewModel::onScreenEvent,
+        booksPagingItems = booksPagingItems,
+        onSearchEvent = viewModel::onSearchEvent,
         router = router,
     )
 }
@@ -62,57 +71,58 @@ fun SearchScreen(
 private fun SearchScreen(
     query: String,
     isSearchExpanded: Boolean,
-    searchState: SearchState,
-    onScreenEvent: (event: SearchEvent) -> Unit,
+    booksPagingItems: LazyPagingItems<Book>,
+    onSearchEvent: (event: SearchEvent) -> Unit,
     router: ISearchRouter,
 ) {
     val focusManager = LocalFocusManager.current
+
+    val booksRefreshLoadState = booksPagingItems.loadState.refresh
 
     Column(Modifier.fillMaxSize()) {
         AppSearchBar(
             query = query,
             onQueryChange = {
-                onScreenEvent(SearchEvent.OnQueryChange(it))
+                onSearchEvent(SearchEvent.OnQueryChange(it))
             },
             onSearch = {
                 focusManager.clearFocus()
-                onScreenEvent(SearchEvent.OnSearchClick)
+                onSearchEvent(SearchEvent.OnSearchClick)
             },
             expanded = isSearchExpanded,
             onExpandedChange = {
-                onScreenEvent(SearchEvent.OnExpandedChange(it))
+                onSearchEvent(SearchEvent.OnExpandedChange(it))
             },
             trailingIcon = if (isSearchExpanded) Icons.Default.Close else null,
             onTrailingIconClick = {
-                onScreenEvent(SearchEvent.OnClearQueryClick)
+                onSearchEvent(SearchEvent.OnClearQueryClick)
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            when (searchState) {
-                SearchState.Initial -> SearchEmptyState(
+            when {
+                !query.isValidSearchQuery() -> SearchEmptyState(
                     titleRes = R.string.search_initial_state_title,
                     descriptionRes = R.string.search_initial_state_description,
                 )
 
-                SearchState.Loading -> SearchProgressState()
+                booksRefreshLoadState is LoadState.Loading -> SearchProgressState()
 
-                SearchState.EmptySearch -> SearchEmptyState(
+                booksRefreshLoadState is LoadState.Error -> SearchErrorState(
+                    onRetryClick = { booksPagingItems.retry() }
+                )
+
+                booksRefreshLoadState is LoadState.NotLoading && booksPagingItems.itemCount == 0 -> SearchEmptyState(
                     titleRes = R.string.search_empty_state_title,
                     descriptionRes = R.string.search_empty_state_description,
                 )
 
-                is SearchState.Content -> SearchContentState(
-                    books = searchState.books,
-                    onBookClick = {
-                        router.openBookDetails(bookKey = it)
-                    }
-                )
-
-                is SearchState.Error -> SearchErrorState(
-                    onRetryClick = {
-                        onScreenEvent(SearchEvent.OnRetrySearch)
-                    }
-                )
+                booksRefreshLoadState is LoadState.NotLoading -> {
+                    BooksList(
+                        booksPagingItems = booksPagingItems,
+                        onBookClick = { router.openBookDetails(it) },
+                        onRetryClick = { booksPagingItems.retry() },
+                    )
+                }
             }
         }
 
@@ -179,20 +189,32 @@ private fun SearchProgressState() {
 }
 
 @Composable
-private fun SearchContentState(
-    books: List<Book>,
+fun BooksList(
+    booksPagingItems: LazyPagingItems<Book>,
     onBookClick: (key: String) -> Unit,
+    onRetryClick: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
-    LazyColumn(modifier = Modifier) {
-        items(books, key = { it.key }) { item ->
-            BookListItem(
-                item = item,
-                onBookClick = {
-                    focusManager.clearFocus()
-                    onBookClick(it)
-                },
+    LazyColumn {
+        items(
+            count = booksPagingItems.itemCount,
+            key = booksPagingItems.itemKey { it.key },
+        ) { index ->
+            booksPagingItems[index]?.let { book ->
+                BookListItem(
+                    item = book,
+                    onBookClick = {
+                        focusManager.clearFocus()
+                        onBookClick(it)
+                    },
+                )
+            }
+        }
+        item {
+            PagingLoadStateView(
+                loadState = booksPagingItems.loadState.append,
+                onRetry = onRetryClick,
             )
         }
     }
@@ -227,7 +249,7 @@ private fun SearchErrorState(
             Spacer(modifier = Modifier.height(24.dp))
             OutlinedButton(onClick = onRetryClick) {
                 Text(
-                    text = stringResource(R.string.search_error_retry_button),
+                    text = stringResource(R.string.retry_button),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(horizontal = 8.dp),
                 )
@@ -244,32 +266,12 @@ private fun SearchErrorState(
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun SearchProgressStatePreview() {
-    BookFlowTheme {
-        Surface {
-            SearchScreen(
-                query = "the",
-                isSearchExpanded = true,
-                searchState = SearchState.Loading,
-                onScreenEvent = {},
-                router = PreviewSearchRouter,
-            )
-        }
-    }
-}
-
-@Preview(name = "Light Theme", showBackground = true)
-@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
 fun SearchEmptyStatePreview() {
     BookFlowTheme {
         Surface {
-            SearchScreen(
-                query = "th",
-                isSearchExpanded = true,
-                searchState = SearchState.EmptySearch,
-                onScreenEvent = {},
-                router = PreviewSearchRouter,
+            SearchEmptyState(
+                titleRes = R.string.search_empty_state_title,
+                descriptionRes = R.string.search_empty_state_description,
             )
         }
     }
@@ -278,17 +280,28 @@ fun SearchEmptyStatePreview() {
 @Preview(name = "Light Theme", showBackground = true)
 @Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun SearchContentStatePreview() {
+fun SearchProgressStatePreview() {
     BookFlowTheme {
         Surface {
-            SearchScreen(
-                query = "the",
-                isSearchExpanded = true,
-                searchState = SearchState.Content(
-                    books = getInitBooks()
-                ),
-                onScreenEvent = {},
-                router = PreviewSearchRouter,
+            SearchProgressState()
+        }
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun BooksListPreview() {
+    val booksPagingItems = flowOf(
+        PagingData.from(getInitBooks())
+    ).collectAsLazyPagingItems()
+
+    BookFlowTheme {
+        Surface {
+            BooksList(
+                booksPagingItems = booksPagingItems,
+                onBookClick = {},
+                onRetryClick = {},
             )
         }
     }
@@ -300,11 +313,28 @@ fun SearchContentStatePreview() {
 fun SearchErrorStatePreview() {
     BookFlowTheme {
         Surface {
+            SearchErrorState(
+                onRetryClick = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "Light Theme", showBackground = true)
+@Preview(name = "Dark Theme", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun SearchScreenPreview() {
+    val booksPagingItems = flowOf(
+        PagingData.from(emptyList<Book>())
+    ).collectAsLazyPagingItems()
+
+    BookFlowTheme {
+        Surface {
             SearchScreen(
-                query = "the",
-                isSearchExpanded = true,
-                searchState = SearchState.Error,
-                onScreenEvent = {},
+                query = "",
+                isSearchExpanded = false,
+                booksPagingItems = booksPagingItems,
+                onSearchEvent = {},
                 router = PreviewSearchRouter,
             )
         }
