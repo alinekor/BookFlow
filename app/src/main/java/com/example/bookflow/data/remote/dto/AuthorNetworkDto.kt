@@ -2,17 +2,17 @@ package com.example.bookflow.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-data class AuthorDto(
+data class AuthorNetworkDto(
     @SerializedName("author")
-    val author: AuthorKeyDto,
+    val author: AuthorKeyNetworkDto,
 )
 
-data class AuthorKeyDto(
+data class AuthorKeyNetworkDto(
     @SerializedName("key")
     val key: String,
 )
 
-data class AuthorNameDto(
+data class AuthorNameNetworkDto(
     @SerializedName("key")
     val key: String,
     @SerializedName("name")

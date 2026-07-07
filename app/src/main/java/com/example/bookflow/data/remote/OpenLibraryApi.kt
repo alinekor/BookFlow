@@ -1,6 +1,6 @@
 package com.example.bookflow.data.remote
 
-import com.example.bookflow.data.remote.dto.AuthorNameDto
+import com.example.bookflow.data.remote.dto.AuthorNameNetworkDto
 import com.example.bookflow.data.remote.dto.BookDetailsNetworkDto
 import com.example.bookflow.data.remote.dto.BookSearchResponseDto
 import retrofit2.http.GET
@@ -25,5 +25,5 @@ interface OpenLibraryApi {
     @GET("{key}.json")
     suspend fun loadAuthor(
         @Path("key") authorKey: String,
-    ): AuthorNameDto
+    ): AuthorNameNetworkDto
 }

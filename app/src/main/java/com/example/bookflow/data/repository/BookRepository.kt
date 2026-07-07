@@ -8,9 +8,7 @@ import com.example.bookflow.data.model.Book
 import com.example.bookflow.data.model.BookDetails
 import com.example.bookflow.data.remote.BookNetworkService
 import com.example.bookflow.data.remote.paging.BookSearchPagingSource
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 
 class BookRepository(
     private val bookNetworkService: BookNetworkService,
@@ -36,18 +34,25 @@ class BookRepository(
     }
 
     suspend fun loadBookDetails(bookKey: String): BookDetails {
+        libraryDatasource.getBookByKey(bookKey)?.let { localSavedBook ->
+            return localSavedBook
+        }
         return bookNetworkService.loadBookDetails(bookKey)
+    }
+
+    fun observeLibraryBooks(): Flow<List<Book>> {
+        return libraryDatasource.observeAllBooks()
     }
 
     fun observeSavedToLibrary(bookKey: String): Flow<Boolean> {
         return libraryDatasource.observeIsBookExist(bookKey)
     }
 
-    suspend fun saveBookToLibrary(book: BookDetails) = withContext(Dispatchers.IO) {
+    suspend fun saveBookToLibrary(book: BookDetails) {
         libraryDatasource.insertBook(book)
     }
 
-    suspend fun removeBookFromLibrary(bookKey: String) = withContext(Dispatchers.IO) {
+    suspend fun deleteBookFromLibrary(bookKey: String) {
         libraryDatasource.deleteBook(bookKey)
     }
 

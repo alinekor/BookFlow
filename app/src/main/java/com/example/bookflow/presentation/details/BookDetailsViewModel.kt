@@ -1,6 +1,7 @@
 package com.example.bookflow.presentation.details
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -83,7 +84,7 @@ class BookDetailsViewModel(
 
         launchCatching {
             if (content.savedToLibrary) {
-                repository.removeBookFromLibrary(bookKey = book.key)
+                repository.deleteBookFromLibrary(bookKey = book.key)
             } else {
                 repository.saveBookToLibrary(book = book)
             }
