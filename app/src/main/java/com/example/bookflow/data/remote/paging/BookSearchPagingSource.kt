@@ -27,7 +27,7 @@ class BookSearchPagingSource(
                 prevKey = if (nextPage == 1) null else nextPage - 1,
                 nextKey = if (books.size < pageSize) null else nextPage + 1
             )
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             if (e is CancellationException) throw e
             LoadResult.Error(e)
         }

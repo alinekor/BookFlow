@@ -1,7 +1,8 @@
 package com.example.bookflow.data.remote
 
 import com.example.bookflow.data.model.Book
-import com.example.bookflow.data.remote.mapper.BookNetworkMapper
+import com.example.bookflow.data.model.BookDetails
+import com.example.bookflow.data.remote.mapper.BooksNetworkMapper
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,6 +21,23 @@ class BookNetworkService(
             page = nextPage,
             limit = limit,
         )
-        response.docs.orEmpty().map(BookNetworkMapper::map)
+        response.docs.orEmpty().map(BooksNetworkMapper::mapSearchItem)
+    }
+
+    suspend fun loadBookDetails(bookKey: String): BookDetails = withContext(dispatcher) {
+        val bookDetailsDto = openLibraryApi.loadBookDetails(bookKey)
+
+        val authorNames = bookDetailsDto.authors
+            ?.map { authorDto -> authorDto.author.key }
+            ?.map { authorKey ->
+                val authorNameDto = openLibraryApi.loadAuthor(authorKey)
+                authorNameDto.name
+            }
+            .orEmpty()
+
+        BooksNetworkMapper.mapBookDetails(
+            dto = bookDetailsDto,
+            authorNames = authorNames,
+        )
     }
 }

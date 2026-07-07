@@ -7,7 +7,10 @@
     <string name="search_empty_state_title">No books found</string>
     <string name="search_empty_state_description">We could not find any books matching your search</string>
     <string name="search_error_state_title">Something went wrong</string>
-    <string name="search_error_state_description">Something went wrong while searching. Try again.</string>
+    <string name="search_error_state_description">Something went wrong while searching. Try\u00A0again.</string>
+
+    <string name="book_details_error_state_title">Something went wrong</string>
+    <string name="book_details_error_state_description">Something went wrong while loading this book. Try\u00A0again.</string>
 
     <string name="page_loading_error_text">Page loading error</string>
     <string name="retry_button">Retry</string>
